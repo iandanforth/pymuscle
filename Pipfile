@@ -10,3 +10,7 @@ name = "pypi"
 
 
 [packages]
+
+smop = "*"
+numpy = "*"
+pyyaml = "*"
