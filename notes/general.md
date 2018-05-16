@@ -65,5 +65,90 @@ still need to launch a python program *shrug*
 
 https://github.com/dbader/schedule
 
+### Asyncio
 
+#### Create an event loop
+
+```python
+import asyncio
+
+loop = asyncio.get_event_loop()
+```
+
+#### Enqueue a function as part of the event loop
+
+```python
+loop = asyncio.get_event_loop()
+async def foo():
+    print('foo')
+    asyncio.ensure_future(foo())
+
+
+asyncio.ensure_future(foo())
+loop.run_forever()
+```
+Note: You can't just recurse in python forever so you need to add new tasks
+to the event loop instead of re-calling a function
+
+Note: You can't call *synchronous* functions like this as that will hit the
+recursion limit as well.
+
+It *appears* that you can call
+
+```python
+loop.create_task()
+```
+
+interchangeably with 
+
+```python
+asyncio.ensure_future()
+```
+
+so the above could be
+```python
+loop = asyncio.get_event_loop()
+async def foo():
+    print('foo')
+    loop.create_task(foo())
+
+
+loop.create_task(foo())
+loop.run_forever()
+```
+
+### Use asyncio to manage multiprocess loops
+
+This is a second and completely different way to set up two concurrent loops.
+This is much less like browser JavaScript and more like Node which actually
+uses multiprocesses in the background for IO. It's a bit like using a webworker.
+
+```python
+import asyncio
+from concurrent.futures import ProcessPoolExecutor
+
+loop = asyncio.get_event_loop()
+# Change default from a ThreadPoolExecutor
+loop.set_default_executor(ProcessPoolExecutor(2))
+
+# Wrap the ugly asyncio API
+def runAsyncSubprocess(loop, func, *args):
+    return asyncio.ensure_future(loop.run_in_executor(None, func, *args))
+
+# Note this is not async
+def fooLoop(n):
+    while True:
+        foo(n)
+
+
+# Also not async
+def foo(n):
+    print('foo %d' % n)
+
+
+if __name__ == '__main__':
+    runAsyncSubprocess(fooLoop, 1)
+    runAsyncSubprocess(fooLoop, 2)
+    loop.run_forever()
+```
 
