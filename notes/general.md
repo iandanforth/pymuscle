@@ -1,5 +1,11 @@
 # Project Notes / Daily Learnings
 
+## Tensorflow
+
+#### Pushback on more flexible core RNNs
+
+https://github.com/tensorflow/tensorflow/pull/2767
+
 ## Python
 
 ### Packaging / Setup / Distribution
@@ -30,6 +36,15 @@ def foo(*args):
     d[args] = "bar"
 ```
 
+### Stats Related
+
+Create a histogram of all the values seen
+
+```python
+from collections import Counter
+Counter(<list of values>)
+```
+
 ### Internals / Magic
 
  - id() will return a unique for any python object
@@ -43,6 +58,7 @@ Built in memoization can be done with
 
 ```python
 from functools import lru_cache
+
 
 @lru_cache(maxsize=128, typed=False)
 def foo(bar, bif):
