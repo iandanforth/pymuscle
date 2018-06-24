@@ -12,6 +12,7 @@ Project Management
                 - What are the goals?
                 - How would someone use the library?
                 - How would they contribute?
+                - Versioning Plan
             - API Design
                 - What kind of information will the user provide?
                 - What kind of information will the API provide?
@@ -35,7 +36,6 @@ Project Management
             - Setup
                 - Dependencies
                 - Install
-                - Versioning Plan
                 - Releases
                 - Upload wheel
         - Sample Project
@@ -47,8 +47,7 @@ Project Management
         - Documentation
     - Create tags
         - P1-3
-        - Close all P1, P2
         - Help Needed
-        - Enhancemen, TestSam
+        - Enhancements
         - Needs Info
         - Trivial

@@ -1,2 +1,203 @@
-# pymuscle
-Muscle and proprioception models for use in simulated agents.
+# PyMuscle
+PyMuscle provides a motor unit based model of skeletal muscle. It simulates the
+relationship between excitatory input and motor-unit output as well as fatigue 
+over time.
+
+It is compatible with [OpenAI Gym](https://gym.openai.com) environments and is 
+intended to be useful for researchers in the machine learning community.
+
+PyMuscle can be used to enhance the realism of motor control for simulated 
+agents. To get you started we provide a toy example project that uses PyMuscle 
+in a simulation of arm curl and extension.
+
+This model and the associated code is based on "A motor unit-based model of muscle fatigue" 
+([Potvin and Fuglevand, 2017](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005581)).
+If you use this library as part of your research please cite that paper.
+
+## More about PyMuscle
+
+Motor control in biological creatures is complex. PyMuscle allows you to capture
+some of that complexity while remaining performant. It provides greater detail 
+than sending torque values to simulated motors-as-joints but less detail (and 
+computational cost) than a full biochemical model.
+
+PyMuscle is not tied to a particular physics library and can be used with a 
+variety of muscle body simulations. PyMuscle focuses on the relationship between 
+control signals (excitatory inputs to motor neurons) and per-motor-unit output.
+
+# Installation
+
+### *** PyMuscle is under development. Please do not install yet. ***
+
+## Requirements
+
+Python 3
+
+
+## Install
+
+```
+pip install pymuscle
+```
+
+# Getting Started
+
+### Familiar with OpenAI's Gym?
+
+Try out the [example project](https://github.com/iandanforth/pymuscle/examples/)
+
+### Minimal example 
+
+The Muscle class provides the primary API for the library. A Muscle can be
+heavily customized but here we use the default values. A default Muscle
+contains 120 motor units with a distribution of strengths, recruitment 
+thresholds, and fatigue properties as used in the experiments of Potvin and 
+Fuglevand, 2017.
+
+```python
+
+from pymuscle import Muscle
+from pymuscle.vis import PotvinChart
+
+step_size = 1 / 50.0  # 50 frames per second
+muscle = Muscle(step_size=step_size)
+
+sim_duration = 60  # seconds
+total_steps = sim_duration / step_size
+outputs = []
+capacities = []
+for _ in range(total_steps):
+    # Get a random valid input for the muscle
+    # In the default case this is an (120, 1) array
+    # Note: PyMuscle uses OpenAI naming conventions. action ~= input
+    action = muscle.action_space.sample()
+    # Update the simulation
+    muscle.step(action)
+    # Inspect the state of the muscle
+    output = muscle.state.motor_units.output  # A per-motor-unit output value
+    capacity = muscle.state.motor_units.capacity  # Max output per unit which decreases with fatigue
+
+    print(output)
+    print(capacity)
+
+# Visualize the behavior of the motor units over time
+chart = PotvinChart(
+    step_size=step_size,
+    motor_unit_outputs=outputs,
+    motor_unit_capacities=capacities
+)
+chart.display()
+```
+
+This will open a browser window with the produced chart. It should look like this:
+
+<p align="center"><img width="80%" src="docs/src/images/minimal-example-chart.png" /></p>
+
+# Versioning Plan
+
+PyMuscle is in a pre-alpha state. Expect regular breaking changes.
+
+We expect to stabilize the API for 1.0 and introduce breaking changes only
+during major releases.
+
+This library tries to provide empirically plausible behavior. As new research is
+released or uncovered we will update the underlying model. Non-bug-fix changes that would alter the
+output of the library will be integrated in major releases.
+
+If you know of results you believe should be integrated please let us know. See the [Contributing](#contributing) section.
+
+# Contributing
+
+We encourage you to contribute! Specifically we'd love to hear about and feature
+projects using PyMuscle.
+
+For all issues please search the [existing issues](https://github.com/iandanforth/pymuscle/issues) before submitting.
+
+- [Bug Reports](https://github.com/iandanforth/pymuscle/issues/new?template=bug_report.md)
+- [Enhancement requests](https://github.com/iandanforth/pymuscle/issues/new?template=feature_request.md)
+- [Suggest research](https://github.com/iandanforth/pymuscle/issues/new?template=research-submission.md) that can better inform the model
+
+
+
+_Before_ opening a pull request please:
+
+- See if there is an open ticket for this issue
+    - If the ticket is tagged 'Help Needed' comment to note that you intend to work on this issue
+    - If the ticket is *not* tagged, comment that you would like to work on the issue
+        - We will then discuss the priority, timing and expectations around the issue.
+- If there is no open ticket, create one
+    - We prefer to discuss the implications of changes before you write code! 
+
+
+## Development
+
+If you want to help develop the PyMuscle library itself the following may help.
+
+Clone this repository
+
+```
+git clone git@github.com:iandanforth/pymuscle.git
+cd pymuscle
+```
+
+Install [pipenv](https://docs.pipenv.org/). (The modern combination of pip and virtual environments.)
+
+```
+pip install pipenv
+```
+
+If this throws a permissions error you will need to to run this with 'sudo'
+
+```
+sudo pip install pipenv
+```
+
+Install dependencies and start a clean python environment
+
+```
+pipenv install
+pipenv shell
+```
+
+To exit this python environment
+
+```
+exit
+```
+
+or close your terminal and start a new one.
+
+# Limitations
+
+## Scope
+
+PyMuscle is concerned with inputs to motor unit neurons, the outputs of those
+motor units, and the changes to that system over time. It does not model the
+dynamics of the muscle body itself or the impact of dynamic motion on this
+motor unit input/output relationship.
+
+## Recovery
+
+Potvin and Fuglevand 2017 explicitly models fatigue but *not* recovery. PyMuscle
+implements a simple inversion of the fatigue rules for recovery but this is not
+empirically grounded. We eagerly await the updated model from Potvin which will
+included a model of recovery.
+
+## Proprioception
+
+This library does not directly provide any feedback signals for control. The
+example project shows how to integrate PyMuscle with a physics simulation to
+get simulated output forces and stretch and strain values derived from the
+state of the simulated muscle body. (In the example this is a damped spring
+but a Hill-type, or more complex model could also be used.)
+
+Fatigue could be used as a feedback signal but this will need to be calculated
+from the states of the motor units.
+
+# Edits TODO
+- why is it more performant? cite external
+- background on muscles + image of muscle -> motor unit
+  - describe biological input - output relationship
+  - explain units of input / output
+- pre-tagged issue submission page?
+- scope - positive and negative examples
