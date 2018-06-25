@@ -217,9 +217,3 @@ but a Hill-type, or more complex model could also be used.)
 
 Fatigue could be used as a feedback signal but this will need to be calculated
 from the states of the motor units.
-
-# Edits TODO
-- background on muscles + image of muscle -> motor unit
-  - describe biological input - output relationship
-  - explain units of input / output
-- scope - positive and negative examples
