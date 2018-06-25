@@ -36,11 +36,13 @@ neuron and the group of fibers that the neuron innervates is called a motor unit
 
 Muscles may have anywhere from a few dozen to thousands of motor units. The
 human arm, for example, has 30 some muscles and is innervated by [approximately 35,000 axons](https://onlinelibrary.wiley.com/doi/abs/10.1002/ana.25018)
-from motor neurons. All motor units are present from birth.
+from motor neurons. 
 
 The brain controls muscles by sending signals to motor units and receiving
-signals from mechanoreceptors in embedded in muscles as well as those in the
-skin.
+signals from mechanoreceptors in embedded in muscles and the skin. All motor 
+units are present from birth and learning to produce smooth coordinated motion
+through control of those units is a significant part of the developmental
+process.
 
 # Installation
 

@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+# flake8: noqa
 from __future__ import division
 from __future__ import print_function
 import numpy as np
@@ -13,12 +14,11 @@ Python port by Ian Danforth
 
 # Model input parameters
 
-nu = 3            # number of neurons (ie. motor units) in the modeled pool ("n")
-samprate = 2       # sample rate (10 Hz is suggested)
-res = 2           # resolution of activations (set = 10 for 0.1 activation resolution, 100 for 0.01)
-# allows for hopping through activations to more rapidly find that which
-# meets the threshold (10 means every 1/10th of maxact)
-hop = 20
+nu = 3              # number of neurons (ie. motor units) in the modeled pool ("n")
+samprate = 2        # sample rate (10 Hz is suggested)
+res = 2             # resolution of activations (set = 10 for 0.1 activation resolution, 100 for 0.01)
+hop = 20            # allows for hopping through activations to more rapidly find that which
+                    # meets the threshold (10 means every 1/10th of maxact)
 r = 50              # range of recruitment thresholds (30 or 50)
 fat = 180           # range of fatigue rates across the motor units (300 best)
 FatFac = 0.0225     # fatigue factor (FF/S) percent of peak force of MU per second
@@ -41,7 +41,7 @@ tL = 90             # longest contraction time (90)
 
 fthscale = 0.5      # sets %MVC level for the trial duration (100% MVC is 1.00)
 con = '0.50'        # for output file names
-fthtime = 4       # duration to run trial (seconds)
+fthtime = 4         # duration to run trial (seconds)
 
 fthsamp = dot(fthtime, samprate)
 fth = zeros(1, fthsamp)
