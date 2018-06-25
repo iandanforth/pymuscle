@@ -17,13 +17,30 @@ If you use this library as part of your research please cite that paper.
 ## More about PyMuscle
 
 Motor control in biological creatures is complex. PyMuscle allows you to capture
-some of that complexity while remaining performant. It provides greater detail 
+some of that complexity while remaining [performant](#performance). It provides greater detail 
 than sending torque values to simulated motors-as-joints but less detail (and 
 computational cost) than a full biochemical model.
 
 PyMuscle is not tied to a particular physics library and can be used with a 
 variety of muscle body simulations. PyMuscle focuses on the relationship between 
 control signals (excitatory inputs to motor neurons) and per-motor-unit output.
+
+# Background
+
+## Motor Units
+<p align="center"><img width="80%" src="docs/src/images/motor-unit-diagram.jpg" /></p>
+
+Skeletal muscles are made up of many muscle fibers. Motor neurons have branching
+axons which innervate a subset of the fibers in a muscle. Together the motor
+neuron and the group of fibers that the neuron innervates is called a motor unit.
+
+Muscles may have anywhere from a few dozen to thousands of motor units. The
+human arm, for example, has 30 some muscles and is innervated by [approximately 35,000 axons](https://onlinelibrary.wiley.com/doi/abs/10.1002/ana.25018)
+from motor neurons. All motor units are present from birth.
+
+The brain controls muscles by sending signals to motor units and receiving
+signals from mechanoreceptors in embedded in muscles as well as those in the
+skin.
 
 # Installation
 
@@ -117,8 +134,6 @@ For all issues please search the [existing issues](https://github.com/iandanfort
 - [Enhancement requests](https://github.com/iandanforth/pymuscle/issues/new?template=feature_request.md)
 - [Suggest research](https://github.com/iandanforth/pymuscle/issues/new?template=research-submission.md) that can better inform the model
 
-
-
 _Before_ opening a pull request please:
 
 - See if there is an open ticket for this issue
@@ -167,6 +182,15 @@ exit
 
 or close your terminal and start a new one.
 
+# Performance
+
+PyMuscle aims to be fast. We use [PyTorch](https://pytorch.org/) to get fast 
+tensor computation on both CPUs and GPUs. PyMuscle is single-process but may be
+extended to multi-process systems in the future.
+
+Our long-term goal is to enable human-scale motor unit simulation at many
+multiples of real time. (Given sufficient compute resources)
+
 # Limitations
 
 ## Scope
@@ -195,9 +219,7 @@ Fatigue could be used as a feedback signal but this will need to be calculated
 from the states of the motor units.
 
 # Edits TODO
-- why is it more performant? cite external
 - background on muscles + image of muscle -> motor unit
   - describe biological input - output relationship
   - explain units of input / output
-- pre-tagged issue submission page?
 - scope - positive and negative examples
