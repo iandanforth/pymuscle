@@ -7,9 +7,11 @@ import pymunk.pygame_util
 
 
 def main():
-    screen_width = screen_height = 600
-    screen, space, clock = init_sim(screen_width, screen_height)
+    # Set up our 2D physics simulation
+    screen, space, clock = init_sim()
 
+    # Add a simulated arm consisting of two rigid bodies (bones) and
+    # two damped springs (muscle bodies)
     brach, tricep = add_arm(screen, space)
 
     # Render Loop
@@ -52,8 +54,9 @@ def handle_keys():
             sys.exit(0)
 
 
-def init_sim(screen_width, screen_height):
+def init_sim():
     pygame.init()
+    screen_width = screen_height = 600
     screen = pygame.display.set_mode((screen_width, screen_height))
     pygame.display.set_caption("Curl Sim")
     space = pymunk.Space()
