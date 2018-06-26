@@ -7,8 +7,8 @@ It is compatible with [OpenAI Gym](https://gym.openai.com) environments and is
 intended to be useful for researchers in the machine learning community.
 
 PyMuscle can be used to enhance the realism of motor control for simulated 
-agents. To get you started we provide a toy example project that uses PyMuscle 
-in a simulation of arm curl and extension.
+agents. To get you started we provide a [toy example project](https://github.com/iandanforth/pymuscle/tree/master/examples) 
+which uses PyMuscle oin a simulation of arm curl and extension.
 
 This model and the associated code is based on "A motor unit-based model of muscle fatigue" 
 ([Potvin and Fuglevand, 2017](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005581)).
@@ -63,7 +63,7 @@ pip install pymuscle
 
 ### Familiar with OpenAI's Gym?
 
-Try out the [example project](https://github.com/iandanforth/pymuscle/examples/)
+Try out the [example project](https://github.com/iandanforth/pymuscle/tree/master/examples)
 
 ### Minimal example 
 
@@ -82,7 +82,7 @@ step_size = 1 / 50.0  # 50 frames per second
 muscle = Muscle(step_size=step_size)
 
 sim_duration = 60  # seconds
-total_steps = sim_duration / step_size
+total_steps = int(sim_duration / step_size)
 outputs = []
 capacities = []
 for _ in range(total_steps):
@@ -120,10 +120,11 @@ We expect to stabilize the API for 1.0 and introduce breaking changes only
 during major releases.
 
 This library tries to provide empirically plausible behavior. As new research is
-released or uncovered we will update the underlying model. Non-bug-fix changes that would alter the
-output of the library will be integrated in major releases.
+released or uncovered we will update the underlying model. Non-bug-fix changes
+that would alter the output of the library will be integrated in major releases.
 
-If you know of results you believe should be integrated please let us know. See the [Contributing](#contributing) section.
+If you know of results you believe should be integrated please let us know. See 
+the [Contributing](#contributing) section.
 
 # Contributing
 
@@ -157,7 +158,8 @@ git clone git@github.com:iandanforth/pymuscle.git
 cd pymuscle
 ```
 
-Install [pipenv](https://docs.pipenv.org/). (The modern combination of pip and virtual environments.)
+Install [pipenv](https://docs.pipenv.org/). (The modern combination of pip and 
+virtual environments.)
 
 ```
 pip install pipenv
