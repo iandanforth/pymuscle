@@ -8,7 +8,7 @@ intended to be useful for researchers in the machine learning community.
 
 PyMuscle can be used to enhance the realism of motor control for simulated 
 agents. To get you started we provide a [toy example project](https://github.com/iandanforth/pymuscle/tree/master/examples) 
-which uses PyMuscle oin a simulation of arm curl and extension.
+which uses PyMuscle in a simulation of arm curl and extension.
 
 This model and the associated code is based on "A motor unit-based model of muscle fatigue" 
 ([Potvin and Fuglevand, 2017](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005581)).
@@ -25,24 +25,52 @@ PyMuscle is not tied to a particular physics library and can be used with a
 variety of muscle body simulations. PyMuscle focuses on the relationship between 
 control signals (excitatory inputs to motor neurons) and per-motor-unit output.
 
+Motor unit output is dimensionless but can be interpreted as force. It can also
+be used as a proxy for the contractile state of muscle bodies in the physics
+sim of your choice.
+
 # Background
 
 ## Motor Units
-<p align="center"><img width="80%" src="docs/src/images/motor-unit-diagram.jpg" /></p>
+<p align="center"><img width="80%" src="docs/src/images/motor-unit-diagram.png" /></p>
 
-Skeletal muscles are made up of many muscle fibers. Motor neurons have branching
-axons which innervate a subset of the fibers in a muscle. Together the motor
-neuron and the group of fibers that the neuron innervates is called a motor unit.
+
+A motor unit is the combination of a motor neuron and the muscle fibers to which
+the neuron makes connections. Skeletal muscles are made up of many muscle fibers. 
+For a given motor unit a single motor neuron will have an axon that branches
+and innervates a subset of the fibers in a muscle. Muscle fibers usually
+belong to only one motor unit.
 
 Muscles may have anywhere from a few dozen to thousands of motor units. The
 human arm, for example, has 30 some muscles and is innervated by [approximately 35,000 axons](https://onlinelibrary.wiley.com/doi/abs/10.1002/ana.25018)
 from motor neurons. 
 
 The brain controls muscles by sending signals to motor units and receiving
-signals from mechanoreceptors in embedded in muscles and the skin. All motor 
-units are present from birth and learning to produce smooth coordinated motion
-through control of those units is a significant part of the developmental
-process.
+signals from mechanoreceptors embedded in muscles and the skin. In animals all
+the motor units an animal will ever have are present from birth and learning to 
+produce smooth coordinated motion through control of those units is a significant 
+part of the developmental process.
+
+## Control
+
+Motor units are recruited in an orderly fashion to produce varying levels of 
+muscle force. 
+
+The cell bodies of motor neurons for a given muscle cluster together in the 
+spinal cord in what are known as motor neuron pools, columns, or nuclei. 
+Generally motor neurons in a pool can be thought of as all getting the same 
+activation inputs. This input is the combination of dozens if not hundreds of 
+separate inputs from interneurons and upper motor neurons carrying signals from
+the brain and mechanoreceptors in the body.
+
+In a voluntary contraction of a muscle, say in curling your arm, the input
+to the motor neuron pool for the bicep muscle will ramp up, recruiting more
+and more motor units, starting from the weakest motor units to stronger ones.
+
+Over time motor neurons and muscle fibers can't produce the same level of force 
+for the same level of activation input. This is called fatigue. The brain must
+compensate for the fatigue if it wants to maintain a given force or perform
+the same action again and again in the same way.
 
 # Installation
 
