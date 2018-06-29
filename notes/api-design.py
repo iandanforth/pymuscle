@@ -1,3 +1,4 @@
+import numpy as np
 from numpy import ndarray
 
 
@@ -176,8 +177,7 @@ class Muscle(object):
 
     def __init__(
         self,
-        motor_unit_count: int = 120,
-        history_size: int = 60,
+        motor_unit_count: int = 120
     ):
         self.motor_unit_count = motor_unit_count
 
@@ -204,11 +204,32 @@ class Muscle(object):
             self.history_size
         )
 
-    def step(self, motor_neuron_input: ndarray, step_size: float) -> None:
+    def step(self, activation: float, step_size: float) -> float:
         """
-        Advances the simulated muscle state.
+        Advances the simulated muscle state. Each motor unit is given
+        <activation>.
 
-        :param input: Excitatory input to all motor neurons in the muscle
+        :param activation: Excitatory input to all motor neurons in the muscle
+        :param step_size: The time period to advance the simulation in seconds
+                          Often a fraction of a second, e.g. (1/50.0)
+        """
+        return self._step_with_full_input(
+            np.full(self.motor_unit_count, activation),
+            step_size
+        )
+
+    def _step_with_full_input(
+        self,
+        motor_neuron_input: ndarray,
+        step_size: float
+    ) -> float:
+        """
+        Advances the simulated muscle state. Allows for control of individual
+        motor units if desired. Each motor unit is given the respective value
+        from the array <motor_neuron_input>.
+
+        :param motor_neuron_input: Excitatory input for each motor neuron in
+                                   the muscle
         :param step_size: The time period to advance the simulation in seconds
                           Often a fraction of a second, e.g. (1/50.0)
         """
@@ -234,3 +255,5 @@ class Muscle(object):
             self.fiber_fatigue,
             self.fiber_output_history,
         )
+
+        return self.fiber_output
