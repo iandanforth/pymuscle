@@ -27,7 +27,7 @@ def main():
             input_delta *= -1
 
         all_input = np.concatenate((brachialis_input, tricep_input))
-        env.step(all_input, step_size)
+        env.step(all_input, step_size, debug=False)
         env.render()
 
 

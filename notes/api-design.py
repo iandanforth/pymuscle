@@ -92,7 +92,9 @@ class MuscleFiberModel(object):
         contraction_time_range: int = 3,
         longest_contract_time: int = 90,
     ):
-        pass
+        # PðiÞ 1⁄4 e1⁄2lnðRPÞði  1Þ=ðn  1Þ 
+
+        
 
     def _calc_fiber_output(
         step_size: float,
@@ -166,6 +168,7 @@ class Muscle(object):
     excitation and muscle fiber contractile state over time.
 
     :param motor_unit_count: How many motor units comprise this muscle.
+    :param history_size: The window over which we calculate fatigues
 
     Usage::
 
@@ -177,9 +180,10 @@ class Muscle(object):
 
     def __init__(
         self,
-        motor_unit_count: int = 120
+        motor_unit_count: int = 120,
+        history_size: int = 60,
     ):
-        self.motor_unit_count = motor_unit_count
+        self._motor_unit_count = motor_unit_count
 
         # Instantiate our model components
         self.motor_neuron_model = MotorNeuronPoolModel(motor_unit_count)
@@ -190,18 +194,18 @@ class Muscle(object):
         self.fiber_intrinsics = gen_fiber_intrinsics()
 
         # Prepare state containers
-        self.motor_neuron_input = ndarray(self.motor_unit_count)
-        self.motor_neuron_fatigue = ndarray(self.motor_unit_count)
-        self.fiber_fatigue = ndarray(self.motor_unit_count)
+        self.motor_neuron_input = ndarray(motor_unit_count)
+        self.motor_neuron_fatigue = ndarray(motor_unit_count)
+        self.fiber_fatigue = ndarray(motor_unit_count)
 
-        self.history_size = history_size
+        self._history_size = history_size
         self.motor_neuron_output_history = ndarray(
-            self.motor_unit_count,
-            self.history_size
+            motor_unit_count,
+            history_size
         )
         self.fiber_output_history = ndarray(
-            self.motor_unit_count,
-            self.history_size
+            motor_unit_count,
+            history_size
         )
 
     def step(self, activation: float, step_size: float) -> float:
@@ -217,6 +221,14 @@ class Muscle(object):
             np.full(self.motor_unit_count, activation),
             step_size
         )
+
+    @property
+    def motor_unit_count(self):
+        return self._motor_unit_count
+
+    @property
+    def history_size(self):
+        return self._history_size
 
     def _step_with_full_input(
         self,
