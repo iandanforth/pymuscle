@@ -88,7 +88,9 @@ class PotvinMuscleFibers(Model):
             plot(fig, filename='ct')
 
     def _normalize_firing_rates(self, firing_rates: ndarray) -> ndarray:
-        return firing_rates * self._contraction_times
+        # Divide by 1000 here as firing rates are per second where contraction
+        # times are in milliseconds.
+        return (firing_rates / 1000) * self._contraction_times
 
     @staticmethod
     def _calc_normalized_forces(normalized_firing_rates: ndarray) -> ndarray:

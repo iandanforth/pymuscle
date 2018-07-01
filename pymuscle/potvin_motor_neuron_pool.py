@@ -2,6 +2,7 @@ import numpy as np
 import plotly.graph_objs as go
 from plotly.offline import plot
 from numpy import ndarray
+from functools import lru_cache
 
 from .model import Model
 
@@ -114,6 +115,10 @@ class PotvinMotorNeuronPool(Model):
         self._max_recruitment_threshold = max_recruitment_threshold
         self._firing_gain = firing_gain
         self._min_firing_rate = min_firing_rate
+        # TODO: This is a hack. Maybe memoize vs pre-calculate?
+        # Is there a good LRU cache decorator I can drop in?
+        # Maybe https://docs.python.org/3/library/functools.html#functools.lru_cache
+        self._resolution_places = len(str(pre_calc_resolution).split(".")[1])
         self._firing_rates_by_excitation = None
 
         # Pre-calculate firing rates for all motor neurons across a range of
@@ -128,6 +133,7 @@ class PotvinMotorNeuronPool(Model):
                 pre_calc_resolution
             )
             for i in excitation_values:
+                i = round(i, self._resolution_places)
                 excitations += pre_calc_resolution
                 self._firing_rates_by_excitation[i] = \
                     self._inner_calc_firing_rates(
