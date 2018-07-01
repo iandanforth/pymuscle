@@ -31,8 +31,8 @@ class PotvinMuscleFibers(Model):
 
       motor_unit_count = 60
       fibers = PotvinMuscleFibers(motor_unit_count)
-      motor_unit_firing_rates = np.rand(motor_unit_count) * 10.0
-      force = fibers.step(motor_unit_firing_rates)
+      motor_neuron_firing_rates = np.rand(motor_unit_count) * 10.0
+      force = fibers.step(motor_neuron_firing_rates)
     """
     def __init__(
         self,
@@ -130,14 +130,10 @@ class PotvinMuscleFibers(Model):
         return self._calc_total_inst_force(inst_forces)
 
     def step(self, motor_pool_output: ndarray) -> float:
+        """
+        Advance the muscle fibers simulation one step.
+
+        Returns the total instantaneous force produced by all fibers for
+        the given input from the motor neuron pool.
+        """
         return self._calc_total_fiber_force(motor_pool_output)
-
-
-if __name__ == '__main__':
-
-    fibers = PotvinMuscleFibers(
-        120,
-        100,
-        max_contraction_time=100,
-        contraction_time_range=5
-    )

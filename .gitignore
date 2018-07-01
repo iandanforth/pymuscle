@@ -1,5 +1,5 @@
 # PyMuscle Specific
-pymuscle/*.html
+notes/*.html
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

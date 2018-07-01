@@ -40,7 +40,7 @@ class PotvinMotorNeuronPool(Model):
     Usage::
 
       from pymuscle import PotvinMotorNeuronPool
-      
+
       motor_unit_count = 60
       pool = PotvinMotorNeuronPool(motor_unit_count)
       excitation = np.full(motor_unit_count, 10.0)
@@ -80,12 +80,20 @@ class PotvinMotorNeuronPool(Model):
             plot(fig, filename='recruitment-thresholds')
 
         # Calculate peak firing rates for each motor neuron
-        firing_rate_range = max_firing_rate_first_unit - max_firing_rate_last_unit
+        firing_rate_range = (
+            max_firing_rate_first_unit - max_firing_rate_last_unit
+        )
         first_recruitment_thresh = self._recruitment_thresholds[0]
-        recruitment_thresh_range = max_recruitment_threshold - first_recruitment_thresh
-        temp_thresholds = self._recruitment_thresholds - first_recruitment_thresh
+        recruitment_thresh_range = (
+            max_recruitment_threshold - first_recruitment_thresh
+        )
+        temp_thresholds = (
+            self._recruitment_thresholds - first_recruitment_thresh
+        )
         temp_thresholds /= recruitment_thresh_range
-        self._peak_firing_rates = max_firing_rate_first_unit - (firing_rate_range * temp_thresholds)
+        self._peak_firing_rates = (
+            max_firing_rate_first_unit - (firing_rate_range * temp_thresholds)
+        )
 
         if DEBUG:
             fig = go.Figure(
@@ -121,14 +129,17 @@ class PotvinMotorNeuronPool(Model):
             )
             for i in excitation_values:
                 excitations += pre_calc_resolution
-                self._firing_rates_by_excitation[i] = self._inner_calc_firing_rates(
-                    excitations,
-                    self._recruitment_thresholds,
-                    self._firing_gain,
-                    self._min_firing_rate,
-                    self._peak_firing_rates
+                self._firing_rates_by_excitation[i] = \
+                    self._inner_calc_firing_rates(
+                        excitations,
+                        self._recruitment_thresholds,
+                        self._firing_gain,
+                        self._min_firing_rate,
+                        self._peak_firing_rates
                 )
-                all_firing_rates_by_excitation.append(self._firing_rates_by_excitation[i])
+                all_firing_rates_by_excitation.append(
+                    self._firing_rates_by_excitation[i]
+                )
 
             if DEBUG:
                 all_array = np.array(all_firing_rates_by_excitation).T
@@ -137,7 +148,7 @@ class PotvinMotorNeuronPool(Model):
                     trace = go.Scatter(
                         x=excitation_values,
                         y=t,
-                        name=i+1
+                        name=i + 1
                     )
                     data.append(trace)
                 fig = go.Figure(
@@ -190,12 +201,10 @@ class PotvinMotorNeuronPool(Model):
         return firing_rates
 
     def step(self, motor_pool_input: ndarray) -> ndarray:
+        """
+        Advance the motor neuron pool simulation one step.
+
+        Returns firing rates on a per motor neuron basis for the given
+        array of excitations.
+        """
         return self._calc_firing_rates(motor_pool_input)
-
-
-if __name__ == '__main__':
-    motor_unit_count = 120
-    pool = PotvinMotorNeuronPool(
-        motor_unit_count,
-        50
-    )
