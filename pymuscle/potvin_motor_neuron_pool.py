@@ -3,7 +3,7 @@ import plotly.graph_objs as go
 from plotly.offline import plot
 from numpy import ndarray
 
-from model import Model
+from .model import Model
 
 DEBUG = False
 
@@ -37,16 +37,14 @@ class PotvinMotorNeuronPool(Model):
         Step size for excitation levels to pre-calculate (res)
     :param pre_calc_max: Highest excitation value to pre-calculate
 
-    .. todo::
-        Correct usage with .step()
-
     Usage::
 
       from pymuscle import PotvinMotorNeuronPool
+      
       motor_unit_count = 60
       pool = PotvinMotorNeuronPool(motor_unit_count)
       excitation = np.full(motor_unit_count, 10.0)
-      firing_rates = pool.calc_firing_rates(excitation)
+      firing_rates = pool.step(excitation)
     """
     def __init__(
         self,

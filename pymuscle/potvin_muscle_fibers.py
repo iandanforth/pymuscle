@@ -5,7 +5,7 @@ from plotly.offline import plot
 from numpy import ndarray
 from copy import copy
 
-from model import Model
+from .model import Model
 
 DEBUG = False
 
@@ -25,14 +25,14 @@ class PotvinMuscleFibers(Model):
     :param contraction_time_range:
         The scale between the fastest contraction time and the slowest (rt)
 
-    .. todo::
-        Correct usage with .step()
-
     Usage::
 
       from pymuscle import PotvinMuscleFibers
+
       motor_unit_count = 60
       fibers = PotvinMuscleFibers(motor_unit_count)
+      motor_unit_firing_rates = np.rand(motor_unit_count) * 10.0
+      force = fibers.step(motor_unit_firing_rates)
     """
     def __init__(
         self,

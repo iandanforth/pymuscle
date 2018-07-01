@@ -1,13 +1,9 @@
 import numpy as np
 from typing import Union
-try:
-    from .potvin_muscle_fibers import PotvinMuscleFibers
-    from .potvin_motor_neuron_pool import PotvinMotorNeuronPool
-    from .model import Model
-except ModuleNotFoundError:
-    from model import Model
-    from potvin_muscle_fibers import PotvinMuscleFibers
-    from potvin_motor_neuron_pool import PotvinMotorNeuronPool
+
+from .potvin_muscle_fibers import PotvinMuscleFibers
+from .potvin_motor_neuron_pool import PotvinMotorNeuronPool
+from .model import Model
 
 
 class Space(object):

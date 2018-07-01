@@ -4,4 +4,7 @@ class Model(object):
     """
 
     def step(self):
+        """
+        Child classes must implement this method.
+        """
         raise NotImplementedError
