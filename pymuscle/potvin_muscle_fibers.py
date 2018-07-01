@@ -1,12 +1,18 @@
 import numpy as np
-from plotly.offline import plot
 import plotly.graph_objs as go
+
+from plotly.offline import plot
 from numpy import ndarray
+from copy import copy
+
+from model import Model
+
+DEBUG = False
 
 
-class PotvinMuscleFiberModel(object):
+class PotvinMuscleFibers(Model):
     """
-    Encapsulates the muscle fiber portions of the motor unit model.
+    Encapsulates the muscle fibers portions of the motor unit model.
 
     The name of each parameter as it appears in Potvin, 2017 is in parentheses.
     If a parameter does not appear in the paper but does appear in the Matlab
@@ -24,9 +30,9 @@ class PotvinMuscleFiberModel(object):
 
     Usage::
 
-      from pymuscle import PotvinMuscleFiberModel
+      from pymuscle import PotvinMuscleFibers
       motor_unit_count = 60
-      fibers = PotvinMuscleFiberModel(motor_unit_count)
+      fibers = PotvinMuscleFibers(motor_unit_count)
     """
     def __init__(
         self,
@@ -34,93 +40,104 @@ class PotvinMuscleFiberModel(object):
         max_twitch_amplitude: int = 100,
         max_contraction_time: int = 90,
         contraction_time_range: int = 3,
-        max_recruitment_threshold: int = 50,
+        max_recruitment_threshold: int = 50
     ):
+        super().__init__()
+
+        # Assign public attributes
+        self.motor_unit_count = motor_unit_count
+
         # Calculate the peak twitch force for each motor unit
-        motor_unit_indices = np.arange(1, motor_unit_count + 1)
+        motor_unit_indices = np.arange(1, self.motor_unit_count + 1)
         t_log = np.log(max_twitch_amplitude)
-        t_exponent = (t_log * (motor_unit_indices)) / (motor_unit_count)
-        self.peak_twitch_forces = np.exp(t_exponent)
+        t_exponent = (t_log * (motor_unit_indices)) / (self.motor_unit_count)
+        self._peak_twitch_forces = np.exp(t_exponent)
+
+        if DEBUG:
+            fig = go.Figure(
+                data=[go.Scatter(
+                    x=motor_unit_indices,
+                    y=self._peak_twitch_forces
+                )],
+                layout=go.Layout(
+                    title='Peak Twitch Forces'
+                )
+            )
+            plot(fig, filename='ptf')
 
         # Calculate the contraction times for each motor unit
         # Results in a smooth range from max_contraction_time at the first
         # motor unit down to max_contraction_time / contraction_time range
         # for the last motor unit
         scale = np.log(max_twitch_amplitude) / np.log(contraction_time_range)
-        self.contraction_times = max_contraction_time * np.power(
-            1 / self.peak_twitch_forces,
+        self._contraction_times = max_contraction_time * np.power(
+            1 / self._peak_twitch_forces,
             1 / scale
         )
 
-    def _calc_fiber_output(
-        step_size: float,
-        fiber_intrinsics: ndarray,
-        fiber_fatigue: ndarray,
-        motor_neuron_output: ndarray
-    ) -> ndarray:
-        pass
+        if DEBUG:
+            fig = go.Figure(
+                data=[go.Scatter(
+                    x=motor_unit_indices,
+                    y=self._contraction_times
+                )],
+                layout=go.Layout(
+                    title='Contraction Times (ms)'
+                )
+            )
+            plot(fig, filename='ct')
 
-    def _calc_fiber_fatigue(
-        step_size: float,
-        fiber_intrinsics: ndarray,
-        fiber_fatigue: ndarray,
-        fiber_output_history: ndarray
-    ) -> ndarray:
-        pass
+    def _normalize_firing_rates(self, firing_rates: ndarray) -> ndarray:
+        return firing_rates * self._contraction_times
 
-    def _calc_fiber_recovery(
-        step_size: float,
-        fiber_intrinsics: ndarray,
-        fiber_fatigue: ndarray,
-        fiber_output_history: ndarray
-    ) -> ndarray:
-        pass
-
-    def _update_fiber_output_history(
-        fiber_output_history: ndarray,
-        fiber_output: ndarray
-    ) -> ndarray:
-        pass
-
-    def step(
-        self,
-        step_size: float,
-        motor_neuron_output: ndarray,
-        fiber_intrinsics: ndarray,
-        fiber_fatigue: ndarray,
-        fiber_output_history: ndarray,
-    ) -> tuple:
-        fiber_output = self._calc_fiber_output(
-            step_size,
-            fiber_intrinsics,
-            fiber_fatigue,
-            motor_neuron_output
+    @staticmethod
+    def _calc_normalized_forces(normalized_firing_rates: ndarray) -> ndarray:
+        normalized_forces = copy(normalized_firing_rates)
+        linear_threshold = 0.4  # Values are non-linear above this value
+        below_thresh_indices = normalized_forces <= linear_threshold
+        above_thresh_indices = normalized_forces > linear_threshold
+        normalized_forces[below_thresh_indices] *= 0.3
+        exponent = -2 * np.power(
+            normalized_forces[above_thresh_indices],
+            3
         )
-        fiber_output_history = self._update_fiber_output_history(
-            fiber_output_history,
-            fiber_output
-        )
-        fiber_fatigue = self._calc_fiber_fatigue(
-            step_size,
-            fiber_intrinsics,
-            fiber_fatigue,
-            fiber_output_history
-        )
-        fiber_fatigue = self._calc_fiber_recovery(
-            step_size,
-            fiber_intrinsics,
-            fiber_fatigue,
-            fiber_output_history
-        )
+        normalized_forces[above_thresh_indices] = 1 - np.exp(exponent)
 
-        return (fiber_output, fiber_output_history, fiber_fatigue)
+        return normalized_forces
+
+    def _calc_inst_forces(self, normalized_force: ndarray) -> ndarray:
+        """
+        Scales the normalized forces for each motor unit by their peak 
+        twitch forces
+        """
+        return normalized_force * self._peak_twitch_forces
+
+    @staticmethod
+    def _calc_total_inst_force(inst_forces: ndarray) -> ndarray:
+        """
+        Returns the sum of all instantaneous forces for the motor units
+        """
+        return np.sum(inst_forces)
+
+    def _calc_total_fiber_force(self, firing_rates: ndarray) -> ndarray:
+        """
+        Calculates the total instantaneous force produced by all fibers for
+        the given instantaneous firing rates.
+        """
+        normalized_firing_rates = self._normalize_firing_rates(firing_rates)
+        normalized_forces = self._calc_normalized_forces(normalized_firing_rates)
+        inst_forces = self._calc_inst_forces(normalized_forces)
+        return self._calc_total_inst_force(inst_forces)
+
+    def step(self, motor_pool_output: ndarray) -> float:
+        return self._calc_total_fiber_force(motor_pool_output)
 
 
 if __name__ == '__main__':
-    fibers = PotvinMuscleFiberModel(
+
+    fibers = PotvinMuscleFibers(
         120,
         100,
         max_contraction_time=100,
         contraction_time_range=5
     )
-
