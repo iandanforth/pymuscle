@@ -1,7 +1,7 @@
 {
   "binary": "/Users/iandanforth/.pyenv/versions/3.6.4/bin/pyre.bin",
   "source_directories": [
-    "."
+    "pymuscle"
   ],
   "typeshed": "/Users/iandanforth/.pyenv/versions/3.6.4/lib/pyre_check/typeshed/stdlib/"
 }

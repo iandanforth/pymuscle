@@ -48,7 +48,7 @@ class PotvinMuscleFibers(Model):
         max_contraction_time: int = 90,
         contraction_time_range: int = 3,
         max_recruitment_threshold: int = 50,
-        fatigue_factor_first_unit: float = 0.000125,
+        fatigue_factor_first_unit: float = 0.0125,
         fatigability_range: int = 180,
         contraction_time_change_ratio: float = 0.379
     ):
@@ -56,6 +56,9 @@ class PotvinMuscleFibers(Model):
             motor_unit_count,
             max_twitch_amplitude
         )
+
+        # These will change with fatigue.
+        self._current_twitch_forces = self._peak_twitch_forces
 
         self._contraction_times = self._calc_contraction_times(
             max_twitch_amplitude,
@@ -75,6 +78,12 @@ class PotvinMuscleFibers(Model):
 
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
+
+    def _apply_fatigue(self, inst_fatigues: ndarray, step_size: float) -> None:
+        fatigues = step_size * inst_fatigues
+        self._current_twitch_forces -= fatigues
+        # Zero out negative values
+        self._current_twitch_forces[self._current_twitch_forces < 0] = 0.0
 
     @staticmethod
     def _calc_contraction_times(
@@ -155,6 +164,14 @@ class PotvinMuscleFibers(Model):
         """
         return normalized_forces * self._peak_twitch_forces
 
+    def _calc_current_forces(self, normalized_forces: ndarray) -> ndarray:
+        """
+        Scales the normalized forces for each motor unit by their current
+        remaining twitch force capacity. i.e. like _calc_inst_forces but
+        includes fatigue.
+        """
+        return normalized_forces * self._current_twitch_forces
+
     def _calc_inst_fatigues(self, normalized_forces: ndarray) -> ndarray:
         """
         Calculates the instantaneous fatigues for each motor unit based on
@@ -189,7 +206,11 @@ class PotvinMuscleFibers(Model):
         inst_forces = self._calc_inst_forces(normalized_forces)
         return self._calc_total_inst_force(inst_forces)
 
-    def step(self, motor_pool_output: ndarray) -> float:
+    def step(
+        self,
+        motor_pool_output: ndarray,
+        step_size: float = 0.1
+    ) -> float:
         """
         Advance the muscle fibers simulation one step.
 

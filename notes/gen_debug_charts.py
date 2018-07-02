@@ -37,7 +37,7 @@ if False:
                 title='Recruitment Thresholds'
             )
         )
-        plot(fig, filename='recruitment-thresholds')
+        plot(fig, filename='recruitment-thresholds.html')
 
     # Peak Firing Rates
     if False:
@@ -50,7 +50,7 @@ if False:
                 title='Peak Firing Rates'
             )
         )
-        plot(fig, filename='peak-firing-rates')
+        plot(fig, filename='peak-firing-rates.html')
 
     # Firing Rates by Excitation
     if False:
@@ -85,7 +85,7 @@ if False:
             layout=go.Layout(
                 title='Firing rates by excitation values'
             ))
-        plot(fig, filename='firing-rates-by-excitation')
+        plot(fig, filename='firing-rates-by-excitation.html')
 
     # Adaptations
     if True:
@@ -123,7 +123,7 @@ if False:
         plot(fig, filename='adapted-firing-rates.html')
 
 # Muscle Fiber Charts
-if False:
+if True:
     # Peak Twitch Forces
     fig = go.Figure(
         data=[go.Scatter(
@@ -134,7 +134,7 @@ if False:
             title='Peak Twitch Forces'
         )
     )
-    plot(fig, filename='peak-twitch-forces')
+    plot(fig, filename='peak-twitch-forces.html')
 
     # Contraction Times
     fig = go.Figure(
@@ -146,7 +146,7 @@ if False:
             title='Contraction Times (ms)'
         )
     )
-    plot(fig, filename='contraction-times')
+    plot(fig, filename='contraction-times.html')
 
     # Nominal Fatigabilities
     fig = go.Figure(
@@ -158,10 +158,23 @@ if False:
             title='Nominal Fatigabilities'
         )
     )
-    plot(fig, filename='nominal-fatigabilities')
+    plot(fig, filename='nominal-fatigabilities.html')
+
+    # Fig 1.D
+    rel_twitch_force = fibers._peak_twitch_forces / fibers._peak_twitch_forces[0]
+    fig = go.Figure(
+        data=[go.Scatter(
+            x=rel_twitch_force,
+            y=fibers._nominal_fatigabilities
+        )],
+        layout=go.Layout(
+            title='Relative Fatigabilities'
+        )
+    )
+    plot(fig, filename='relative-fatigabilities.html')
 
 # Force Charts
-if True:
+if False:
     xs = np.arange(0.0, 70.0, 0.1)
     forces = []
     all_forces_by_excitation = []
@@ -190,7 +203,7 @@ if True:
             title='Total force by Excitation'
         )
     )
-    plot(fig, filename='total-force-by-excitation')
+    plot(fig, filename='total-force-by-excitation.html')
 
     # Per Motor Unit Force
     all_array = np.array(all_forces_by_excitation).T
@@ -207,7 +220,7 @@ if True:
         layout=go.Layout(
             title='Motor Unit Forces by Excitation Values'
         ))
-    plot(fig, filename='forces-by-excitation')
+    plot(fig, filename='forces-by-excitation.html')
 
     # Normalized Per Motor Unit Force
     all_array = np.array(normalized_all_forces_by_excitation).T
@@ -224,4 +237,4 @@ if True:
         layout=go.Layout(
             title='Normalized Motor Unit Forces by Excitation Values'
         ))
-    plot(fig, filename='normalized-forces-by-excitation')
+    plot(fig, filename='normalized-forces-by-excitation.html')
