@@ -24,7 +24,7 @@ fibers = PotvinMuscleFibers(
 )
 
 # Motor Neuron Pool Charts
-if True:
+if False:
 
     # Recruitment Thresholds
     if True:
@@ -161,7 +161,7 @@ if False:
     plot(fig, filename='nominal-fatigabilities')
 
 # Force Charts
-if False:
+if True:
     xs = np.arange(0.0, 70.0, 0.1)
     forces = []
     all_forces_by_excitation = []

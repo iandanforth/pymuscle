@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Written by Kenneth Reitz: https://github.com/kennethreitz/setup.py
 
 # Note: To use the 'upload' functionality of this file, you must:
 #   $ pip install twine
@@ -14,16 +13,16 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'pymuscle'
-DESCRIPTION = 'Simulated muscles for virtual agents'
+DESCRIPTION = 'A motor unit based model of skeletal muscle and fatigue'
 URL = 'https://github.com/iandanforth/pymuscle'
 EMAIL = 'iandanforth@gmail.com'
 AUTHOR = 'Ian Danforth'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.1'
+VERSION = None
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    # 'requests', 'maya', 'records',
+    'numpy',
 ]
 
 # The rest you shouldn't have to touch too much :)
@@ -77,10 +76,10 @@ class UploadCommand(Command):
         self.status('Uploading the package to PyPi via Twine…')
         os.system('twine upload dist/*')
 
-        self.status('Pushing git tags…')
-        os.system('git tag v{0}'.format(about['__version__']))
-        os.system('git push --tags')
-        
+        # self.status('Pushing git tags…')
+        # os.system('git tag v{0}'.format(about['__version__']))
+        # os.system('git push --tags')
+
         sys.exit()
 
 
@@ -96,6 +95,7 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     # packages=find_packages(exclude=('tests',)),
+    # If your package is a single module, use this instead of 'packages':
     py_modules=[NAME],
 
     # entry_points={
