@@ -25,66 +25,105 @@ fibers = PotvinMuscleFibers(
 
 # Motor Neuron Pool Charts
 if True:
+
     # Recruitment Thresholds
-    fig = go.Figure(
-        data=[go.Scatter(
-            x=motor_unit_indices,
-            y=pool._recruitment_thresholds
-        )],
-        layout=go.Layout(
-            title='Recruitment Thresholds'
+    if True:
+        fig = go.Figure(
+            data=[go.Scatter(
+                x=motor_unit_indices,
+                y=pool._recruitment_thresholds
+            )],
+            layout=go.Layout(
+                title='Recruitment Thresholds'
+            )
         )
-    )
-    plot(fig, filename='recruitment-thresholds')
+        plot(fig, filename='recruitment-thresholds')
 
     # Peak Firing Rates
-    fig = go.Figure(
-        data=[go.Scatter(
-            x=motor_unit_indices,
-            y=pool._peak_firing_rates
-        )],
-        layout=go.Layout(
-            title='Peak Firing Rates'
+    if False:
+        fig = go.Figure(
+            data=[go.Scatter(
+                x=motor_unit_indices,
+                y=pool._peak_firing_rates
+            )],
+            layout=go.Layout(
+                title='Peak Firing Rates'
+            )
         )
-    )
-    plot(fig, filename='peak-firing-rates')
+        plot(fig, filename='peak-firing-rates')
 
     # Firing Rates by Excitation
-    pre_calc_max = 70.0
-    pre_calc_resolution = 0.1
-    resolution_places = len(str(pre_calc_resolution).split(".")[1])
-    excitations = np.zeros(motor_unit_count)
-    all_firing_rates_by_excitation = []
-    excitation_values = np.arange(
-        0.0,
-        pre_calc_max + pre_calc_resolution,
-        pre_calc_resolution
-    )
-
-    # This assumes Python 3.6+ which has order preserving dicts
-    for k, v in pool._firing_rates_by_excitation.items():
-        all_firing_rates_by_excitation.append(
-            pool._firing_rates_by_excitation[k]
+    if False:
+        pre_calc_max = 70.0
+        pre_calc_resolution = 0.1
+        resolution_places = len(str(pre_calc_resolution).split(".")[1])
+        excitations = np.zeros(motor_unit_count)
+        all_firing_rates_by_excitation = []
+        excitation_values = np.arange(
+            0.0,
+            pre_calc_max + pre_calc_resolution,
+            pre_calc_resolution
         )
 
-    all_array = np.array(all_firing_rates_by_excitation).T
-    data = []
-    for i, t in enumerate(all_array):
-        trace = go.Scatter(
-            x=excitation_values,
-            y=t,
-            name=i + 1
+        # This assumes Python 3.6+ which has order preserving dicts
+        for k, v in pool._firing_rates_by_excitation.items():
+            all_firing_rates_by_excitation.append(
+                pool._firing_rates_by_excitation[k]
+            )
+
+        all_array = np.array(all_firing_rates_by_excitation).T
+        data = []
+        for i, t in enumerate(all_array):
+            trace = go.Scatter(
+                x=excitation_values,
+                y=t,
+                name=i + 1
+            )
+            data.append(trace)
+        fig = go.Figure(
+            data=data,
+            layout=go.Layout(
+                title='Firing rates by excitation values'
+            ))
+        plot(fig, filename='firing-rates-by-excitation')
+
+    # Adaptations
+    if True:
+        # Uses example values from paper for verification
+        excitation = 20.0
+        current_time = 15
+        excitations = np.full(motor_unit_count, excitation)
+        firing_rates = pool._calc_firing_rates(excitations)
+        adaptations = pool._calc_adaptations(firing_rates, current_time)
+        adapted_firing_rates = pool._calc_adapted_firing_rates(
+            excitations,
+            current_time
         )
-        data.append(trace)
-    fig = go.Figure(
-        data=data,
-        layout=go.Layout(
-            title='Firing rates by excitation values'
-        ))
-    plot(fig, filename='firing-rates-by-excitation')
+
+        fig = go.Figure(
+            data=[go.Scatter(
+                x=motor_unit_indices,
+                y=adaptations
+            )],
+            layout=go.Layout(
+                title='Adaptations @ {}'.format(excitation)
+            )
+        )
+        plot(fig, filename='adaptations.html')
+
+        fig = go.Figure(
+            data=[go.Scatter(
+                x=motor_unit_indices,
+                y=adapted_firing_rates
+            )],
+            layout=go.Layout(
+                title='Adapted Firing Rates @ {}'.format(excitation)
+            )
+        )
+        plot(fig, filename='adapted-firing-rates.html')
 
 # Muscle Fiber Charts
-if True:
+if False:
     # Peak Twitch Forces
     fig = go.Figure(
         data=[go.Scatter(
@@ -122,7 +161,7 @@ if True:
     plot(fig, filename='nominal-fatigabilities')
 
 # Force Charts
-if True:
+if False:
     xs = np.arange(0.0, 70.0, 0.1)
     forces = []
     all_forces_by_excitation = []

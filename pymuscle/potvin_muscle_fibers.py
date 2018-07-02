@@ -24,6 +24,9 @@ class PotvinMuscleFibers(Model):
         The nominal fatigability of the first motor unit in percent / second
     :fatigability_range:
         The scale between the fatigability of the first motor unit and the last
+    :contraction_time_change_ratio:
+        For each percent of force lost during fatigue, what percentage should
+        contraction increase? Based on Shields et al (1997)
 
     .. todo::
         The argument naming isn't consistent. Sometimes we use 'max' and other
@@ -47,6 +50,7 @@ class PotvinMuscleFibers(Model):
         max_recruitment_threshold: int = 50,
         fatigue_factor_first_unit: float = 0.000125,
         fatigability_range: int = 180,
+        contraction_time_change_ratio: float = 0.379
     ):
         self._peak_twitch_forces = self._calc_peak_twitch_forces(
             motor_unit_count,
@@ -65,6 +69,9 @@ class PotvinMuscleFibers(Model):
             fatigability_range,
             fatigue_factor_first_unit
         )
+
+        # Assing other non-public attributes
+        self._contraction_time_change_ratio = contraction_time_change_ratio
 
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
@@ -141,12 +148,29 @@ class PotvinMuscleFibers(Model):
 
         return normalized_forces
 
-    def _calc_inst_forces(self, normalized_force: ndarray) -> ndarray:
+    def _calc_inst_forces(self, normalized_forces: ndarray) -> ndarray:
         """
         Scales the normalized forces for each motor unit by their peak 
         twitch forces
         """
-        return normalized_force * self._peak_twitch_forces
+        return normalized_forces * self._peak_twitch_forces
+
+    def _calc_inst_fatigues(self, normalized_forces: ndarray) -> ndarray:
+        """
+        Calculates the instantaneous fatigues for each motor unit based on
+        the normalized force it is currently producing.
+        """
+        return normalized_forces * self._nominal_fatigabilities
+
+    def _calc_contraction_time_increase(self, force_losses: ndarray):
+        """
+        Calculates the percent that contraction times should increase for
+        a given loss in force.
+
+        :param force_losses: Percentage decrease in force being produced
+            by each motor unit
+        """
+        return self._contraction_time_change_ratio * force_losses
 
     @staticmethod
     def _calc_total_inst_force(inst_forces: ndarray) -> ndarray:

@@ -32,6 +32,19 @@ class PotvinMotorNeuronPool(Model):
     :param pre_calc_resolution:
         Step size for excitation levels to pre-calculate (res)
     :param pre_calc_max: Highest excitation value to pre-calculate
+    :param derecruitment_delta:
+        Absolute minimum firing rate = min_firing_rate - derecruitment_delta
+        (d)
+    :param adaptation_magnitude:
+        Magnitude of adaptation for different levels of excitation.(phi)
+    :param adaptation_time_constant:
+        Time constant for motor neuron adaptation (tau). Default based on
+        Revill & Fuglevand (2011)
+
+    .. todo::
+        Make pre_calc_max a function of other values as in the matlab code.
+        This will also require changing how we look up values if they
+        are larger than this value.
 
     Usage::
 
@@ -50,9 +63,12 @@ class PotvinMotorNeuronPool(Model):
         min_firing_rate: int = 8,
         max_firing_rate_first_unit: int = 35,
         max_firing_rate_last_unit: int = 25,
-        pre_calc_firing_rates: bool = True,
+        pre_calc_firing_rates: bool = False,
         pre_calc_resolution: float = 0.1,
-        pre_calc_max: float = 70.0
+        pre_calc_max: float = 70.0,
+        derecruitment_delta: int = 2,
+        adaptation_magnitude: float = 0.67,
+        adaptation_time_constant: int = 22,
     ):
         self._recruitment_thresholds = self._calc_recruitment_thresholds(
             motor_unit_count,
@@ -66,10 +82,16 @@ class PotvinMotorNeuronPool(Model):
             self._recruitment_thresholds
         )
 
+        # TODO should have non-numeric value if not recruited
+        self._recruitment_times = np.zeros(motor_unit_count)
+
         # Assign additional non-public attributes
         self._max_recruitment_threshold = max_recruitment_threshold
         self._firing_gain = firing_gain
         self._min_firing_rate = min_firing_rate
+        self._derecruitment_delta = derecruitment_delta
+        self._adaptation_magnitude = adaptation_magnitude
+        self._adaptation_time_constant = adaptation_time_constant
 
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
@@ -92,7 +114,6 @@ class PotvinMotorNeuronPool(Model):
 
         self._firing_rates_by_excitation = {}
         # TODO: This is a hack. Maybe memoize vs pre-calculate?
-        # Is there a good LRU cache decorator I can drop in?
         # Maybe https://docs.python.org/3/library/functools.html#functools.lru_cache
         resolution_places = len(str(pre_calc_resolution).split(".")[1])
         excitations = np.zeros(self.motor_unit_count)
@@ -113,6 +134,31 @@ class PotvinMotorNeuronPool(Model):
                     self._peak_firing_rates
             )
 
+    def _calc_max_adaptations(self, firing_rates: ndarray) -> ndarray:
+        recruitment_ratios = (
+            (self._recruitment_thresholds - 1)
+            / (self._max_recruitment_threshold - 1)
+        )
+
+        print("MU 60 Min recruitment thresh: ", self._recruitment_thresholds[59])
+
+        print("Recruitment ratio:", recruitment_ratios[59])
+
+        return self._adaptation_magnitude \
+            * (firing_rates -
+               self._min_firing_rate +
+               self._derecruitment_delta) \
+            * recruitment_ratios
+
+    def _calc_adaptations(self, firing_rates: ndarray, cur_time: int) -> ndarray:
+        max_adapt = self._calc_max_adaptations(firing_rates)
+        exponent = -1 * (cur_time - self._recruitment_times) / self._adaptation_time_constant
+        adapt_scale = 1 - np.exp(exponent)
+        adaptations = max_adapt * adapt_scale
+        # Zero out negative values
+        adaptations[adaptations < 0] = 0.0
+        return adaptations
+
     def _calc_firing_rates(self, excitations: ndarray) -> ndarray:
         """
         Calculates firing rates on a per motor neuron basis for the given
@@ -120,19 +166,32 @@ class PotvinMotorNeuronPool(Model):
         """
         assert (len(excitations) == len(self._recruitment_thresholds))
 
-        if self._firing_rates_by_excitation:
-            excitation = excitations[0]  # TODO - Support variations
-            firing_rates = self._firing_rates_by_excitation[excitation]
-        else:
-            firing_rates = self._inner_calc_firing_rates(
-                excitations,
-                self._recruitment_thresholds,
-                self._firing_gain,
-                self._min_firing_rate,
-                self._peak_firing_rates
-            )
+        # if self._firing_rates_by_excitation:
+        #     excitation = excitations[0]  # TODO - Support variations
+        #     firing_rates = self._firing_rates_by_excitation[excitation]
+        # else:
+        firing_rates = self._inner_calc_firing_rates(
+            excitations,
+            self._recruitment_thresholds,
+            self._firing_gain,
+            self._min_firing_rate,
+            self._peak_firing_rates
+        )
 
         return firing_rates
+
+    def _calc_adapted_firing_rates(
+        self,
+        excitations: ndarray,
+        cur_time: int
+    ) -> ndarray:
+        """
+        Calculate the firing rate for the given excitation including motor
+        neuron fatigue (adaptation).
+        """
+        firing_rates = self._calc_firing_rates(excitations)
+        adaptations = self._calc_adaptations(firing_rates, cur_time)
+        return firing_rates - adaptations
 
     @staticmethod
     def _calc_peak_firing_rates(
@@ -170,7 +229,7 @@ class PotvinMotorNeuronPool(Model):
         motor_unit_indices = np.arange(1, motor_unit_count + 1)
 
         r_log = np.log(max_recruitment_threshold)
-        r_exponent = (r_log * (motor_unit_indices)) / (motor_unit_count)
+        r_exponent = (r_log * (motor_unit_indices - 1)) / (motor_unit_count - 1)
         return np.exp(r_exponent)
 
     @staticmethod
