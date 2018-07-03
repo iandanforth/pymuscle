@@ -67,6 +67,9 @@ class PotvinMuscleFibers(Model):
             self._peak_twitch_forces
         )
 
+        # These will change with fatigue
+        self._current_contraction_times = self._contraction_times
+
         self._nominal_fatigabilities = self._calc_nominal_fatigabilities(
             motor_unit_count,
             fatigability_range,
@@ -80,10 +83,15 @@ class PotvinMuscleFibers(Model):
         self.motor_unit_count = motor_unit_count
 
     def _apply_fatigue(self, inst_fatigues: ndarray, step_size: float) -> None:
+        # Update twitch forces
         fatigues = step_size * inst_fatigues
         self._current_twitch_forces -= fatigues
         # Zero out negative values
         self._current_twitch_forces[self._current_twitch_forces < 0] = 0.0
+
+        # Update contraction times
+        # increase_percents = self._calc_ct_increase_percents(fatigues)
+        # self._current_contraction_times *= (1 + increase_percents)
 
     @staticmethod
     def _calc_contraction_times(
@@ -120,7 +128,7 @@ class PotvinMuscleFibers(Model):
         """
         motor_unit_indices = np.arange(1, motor_unit_count + 1)
         t_log = np.log(max_twitch_amplitude)
-        t_exponent = (t_log * (motor_unit_indices)) / (motor_unit_count)
+        t_exponent = (t_log * (motor_unit_indices - 1)) / (motor_unit_count - 1)
         return np.exp(t_exponent)
 
     @staticmethod
@@ -134,13 +142,18 @@ class PotvinMuscleFibers(Model):
         """
         motor_unit_indices = np.arange(1, motor_unit_count + 1)
         f_log = np.log(fatigability_range)
-        f_exponent = (f_log * (motor_unit_indices)) / (motor_unit_count)
-        return np.exp(f_exponent) * fatigue_factor_first_unit
+        f_exponent = (f_log * (motor_unit_indices - 1)) / (motor_unit_count - 1)
+        return fatigue_factor_first_unit * np.exp(f_exponent)
 
     def _normalize_firing_rates(self, firing_rates: ndarray) -> ndarray:
         # Divide by 1000 here as firing rates are per second where contraction
         # times are in milliseconds.
         return (firing_rates / 1000) * self._contraction_times
+
+    def _normalize_firing_rates_w_fatigue(self, firing_rates: ndarray) -> ndarray:
+        # Divide by 1000 here as firing rates are per second where contraction
+        # times are in milliseconds.
+        return (firing_rates / 1000) * self._current_contraction_times
 
     @staticmethod
     def _calc_normalized_forces(normalized_firing_rates: ndarray) -> ndarray:
@@ -179,7 +192,7 @@ class PotvinMuscleFibers(Model):
         """
         return normalized_forces * self._nominal_fatigabilities
 
-    def _calc_contraction_time_increase(self, force_losses: ndarray):
+    def _calc_ct_increase_percents(self, force_losses: ndarray):
         """
         Calculates the percent that contraction times should increase for
         a given loss in force.
@@ -201,7 +214,7 @@ class PotvinMuscleFibers(Model):
         Calculates the total instantaneous force produced by all fibers for
         the given instantaneous firing rates.
         """
-        normalized_firing_rates = self._normalize_firing_rates(firing_rates)
+        normalized_firing_rates = self._normalize_firing_rates_w_fatigue(firing_rates)
         normalized_forces = self._calc_normalized_forces(normalized_firing_rates)
         inst_forces = self._calc_inst_forces(normalized_forces)
         return self._calc_total_inst_force(inst_forces)

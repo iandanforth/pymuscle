@@ -123,7 +123,7 @@ if False:
         plot(fig, filename='adapted-firing-rates.html')
 
 # Muscle Fiber Charts
-if True:
+if False:
     # Peak Twitch Forces
     fig = go.Figure(
         data=[go.Scatter(
@@ -148,6 +148,20 @@ if True:
     )
     plot(fig, filename='contraction-times.html')
 
+    # Fig 1.B
+    rel_twitch_force = fibers._peak_twitch_forces / fibers._peak_twitch_forces[0]
+    fig = go.Figure(
+        data=[go.Scatter(
+            x=fibers._contraction_times,
+            y=rel_twitch_force,
+            mode='markers'
+        )],
+        layout=go.Layout(
+            title='Relative Contraction Times'
+        )
+    )
+    plot(fig, filename='relative-contraction-times.html')
+
     # Nominal Fatigabilities
     fig = go.Figure(
         data=[go.Scatter(
@@ -165,7 +179,8 @@ if True:
     fig = go.Figure(
         data=[go.Scatter(
             x=rel_twitch_force,
-            y=fibers._nominal_fatigabilities
+            y=fibers._nominal_fatigabilities,
+            mode='markers'
         )],
         layout=go.Layout(
             title='Relative Fatigabilities'
@@ -174,7 +189,7 @@ if True:
     plot(fig, filename='relative-fatigabilities.html')
 
 # Force Charts
-if False:
+if True:
     xs = np.arange(0.0, 70.0, 0.1)
     forces = []
     all_forces_by_excitation = []

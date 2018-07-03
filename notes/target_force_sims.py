@@ -28,15 +28,13 @@ def get_force(excitations):
 
 
 # Target Force - 20% MVC
-max_force = 2234.0
+max_force = 2216.0
 max_excitation = 67.0
 target_percent = 20
 target_force = max_force * (target_percent / 100)
-excitations = np.full(motor_unit_count, 1.0)
 e_inc = 0.01
-_, _, total_force = get_force(excitations)
 sim_time = 0.0
-sim_duration = 200.0
+sim_duration = 550.0
 time_inc = 0.1
 force_capacities = fibers._peak_twitch_forces
 total_peak_capacity = sum(force_capacities)
@@ -47,7 +45,10 @@ all_excitation_levels = []
 all_total_capacities = []
 current_forces = []
 hit_max_excite = False
+excitations = np.full(motor_unit_count, 1.0)
 while sim_time < sim_duration:
+    total_force = 0.0
+    excitations = excitations - (20 * e_inc) # Start the search again from a slightly lower value
     # Find the required excitation level for target_force
     while total_force < target_force:
         # print(excitations[0])
@@ -56,8 +57,8 @@ while sim_time < sim_duration:
                 print("Hit max excitation: ", sim_time)
                 hit_max_excite = True
             break
-        excitations += e_inc
         _, _, total_force = get_force(excitations)
+        excitations += e_inc
 
     # We're now at the correct excitation level to generate target_force
     normalized_forces, current_forces, total_force = get_force(excitations)
