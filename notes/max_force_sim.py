@@ -19,8 +19,46 @@ pool = PotvinMotorNeuronPool(motor_unit_count)
 fibers = PotvinMuscleFibers(motor_unit_count)
 
 
-def get_force(excitations, current_time):
-    firing_rates = pool._calc_adapted_firing_rates(excitations, current_time)
+if False:
+    all_firing_rates = []
+    all_excitation_levels = []
+    all_norm_forces = []
+    all_norm_firing = []
+    for i in np.arange(1.0, 67.0, 0.1):
+        excitations = np.full(motor_unit_count, i)
+        firing_rates = pool._calc_firing_rates(excitations)
+        normalized_firing_rates = fibers._normalize_firing_rates(firing_rates)
+        normalized_forces = fibers._calc_normalized_forces(normalized_firing_rates)
+        current_forces = fibers._calc_current_forces(normalized_forces)
+        total_force = fibers._calc_total_inst_force(current_forces)
+        all_excitation_levels.append(i)
+        all_firing_rates.append(firing_rates[0])
+        all_norm_forces.append(normalized_forces[0])
+        all_norm_firing.append(normalized_firing_rates[0])
+
+    plot([go.Scatter(
+        x=all_excitation_levels,
+        y=all_firing_rates,
+        mode='markers'
+    )], filename='firing-rates-by-excitation.html')
+
+    plot([go.Scatter(
+        x=all_firing_rates,
+        y=all_norm_firing,
+        mode='markers'
+    )], filename='norm-firing-rates-by-firing-rate.html')
+
+    plot([go.Scatter(
+        x=all_norm_firing,
+        y=all_norm_forces,
+        mode='markers'
+    )], filename='norm-forces-by-norm-firing.html')
+
+    quit()
+
+
+def get_force(excitations, cur_time):
+    firing_rates = pool._calc_adapted_firing_rates(excitations, cur_time)
     normalized_firing_rates = fibers._normalize_firing_rates(firing_rates)
     normalized_forces = fibers._calc_normalized_forces(normalized_firing_rates)
     current_forces = fibers._calc_current_forces(normalized_forces)
@@ -28,15 +66,13 @@ def get_force(excitations, current_time):
     return firing_rates, normalized_forces, current_forces, total_force
 
 
-# Target Force - 20% MVC
-max_force = 2216.0
+# Target Force - 100% MVC
 max_excitation = 67.0
-target_percent = 50
-target_force = max_force * (target_percent / 100)
 e_inc = 0.01
 sim_time = 0.0
-sim_duration = 100.0
-time_inc = 0.1
+max_force = 2216.0
+sim_duration = 200.0
+time_inc = 1.0
 force_capacities = fibers._peak_twitch_forces
 total_peak_capacity = sum(force_capacities)
 step_counter = 0
@@ -48,38 +84,28 @@ all_total_capacities = []
 all_firing_rates = []
 current_forces = []
 hit_max_excite = False
-excitations = np.full(motor_unit_count, 31.0)
+excitations = np.full(motor_unit_count, max_excitation)
 while sim_time < sim_duration:
-    total_force = 0.0
-    excitations = excitations - (2 * e_inc)  # Start the search again from a slightly lower value
-    # Find the required excitation level for target_force
-    while total_force < target_force:
-        if excitations[0] > max_excitation:
-            if not hit_max_excite:
-                print("Hit max excitation: ", sim_time)
-                hit_max_excite = True
-            break
-        _, _, _, total_force = get_force(excitations, sim_time)
-        excitations += e_inc
-
     # We're now at the correct excitation level to generate target_force
     firing_rates, normalized_forces, current_forces, total_force = get_force(excitations, sim_time)
-    # Update fatigue
-    fibers._apply_fatigue(normalized_forces, time_inc)
     # Record our step
     sim_time += time_inc
+    # print("Sim time", sim_time)
     step_counter += 1
     all_forces.append(current_forces)
-    all_total_forces.append(total_force / max_force)
-    all_excitation_levels.append(excitations[0] / max_excitation)
-    all_capacities.append(copy(fibers._current_twitch_forces) / fibers._peak_twitch_forces)
+    all_total_forces.append((total_force / max_force) * 100)
+    all_excitation_levels.append((excitations[0] / max_excitation) * 100)
+    all_capacities.append((copy(fibers._current_twitch_forces) / fibers._peak_twitch_forces) * 100)
     total_capacity = sum(fibers._current_twitch_forces)
-    all_total_capacities.append(total_capacity / total_peak_capacity)
+    all_total_capacities.append((total_capacity / max_force) * 100)
     all_firing_rates.append(firing_rates)
+    # Update fatigue
+    inst_fatigue = fibers._calc_inst_fatigues(normalized_forces)
+    fibers._apply_fatigue(inst_fatigue, time_inc)
 
 times = np.arange(0.0, sim_duration, time_inc)
 
-if True:
+if False:
     # 2.A
     a_data = []
     # Total Muscle Force
@@ -116,12 +142,13 @@ if True:
     all_array = np.array(all_forces).T
     data = []
     for i, t in enumerate(all_array):
-        trace = go.Scatter(
-            x=times,
-            y=t,
-            name=i + 1
-        )
-        data.append(trace)
+        if (i + 1) % 20 == 0:
+            trace = go.Scatter(
+                x=times,
+                y=t,
+                name=i + 1
+            )
+            data.append(trace)
     fig = go.Figure(
         data=data,
         layout=go.Layout(
@@ -129,7 +156,7 @@ if True:
         ))
     plot(fig, filename='forces-by-time.html')
 
-if True:
+if False:
     # 2.B - Per Motor Unit Firing Rate by Time
     all_array = np.array(all_firing_rates).T
     data = []
@@ -152,15 +179,16 @@ if True:
     all_array = np.array(all_capacities).T
     data = []
     for i, t in enumerate(all_array):
-        trace = go.Scatter(
-            x=times,
-            y=t,
-            name=i + 1
-        )
-        data.append(trace)
+        if (i + 1) % 20 == 0:
+            trace = go.Scatter(
+                x=times,
+                y=t,
+                name=i + 1
+            )
+            data.append(trace)
     fig = go.Figure(
         data=data,
         layout=go.Layout(
-            title='Motor Unit Force Capacities by Time'
+            title='Motor Unit Force Capacities by Time at Max Excitation'
         ))
-    plot(fig, filename='force-capacities-by-time.html')
+    plot(fig, filename='force-capacities-by-time-max.html')

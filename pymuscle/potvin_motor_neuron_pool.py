@@ -68,7 +68,7 @@ class PotvinMotorNeuronPool(Model):
         pre_calc_max: float = 70.0,
         derecruitment_delta: int = 2,
         adaptation_magnitude: float = 0.67,
-        adaptation_time_constant: int = 22,
+        adaptation_time_constant: float = 22.0,
     ):
         self._recruitment_thresholds = self._calc_recruitment_thresholds(
             motor_unit_count,
@@ -83,7 +83,7 @@ class PotvinMotorNeuronPool(Model):
         )
 
         # TODO should have non-numeric value if not recruited
-        self._recruitment_times = np.zeros(motor_unit_count)
+        self._recruitment_durations = np.zeros(motor_unit_count)
 
         # Assign additional non-public attributes
         self._max_recruitment_threshold = max_recruitment_threshold
@@ -134,30 +134,21 @@ class PotvinMotorNeuronPool(Model):
                     self._peak_firing_rates
             )
 
-    def _calc_max_adaptations(self, firing_rates: ndarray) -> ndarray:
-        recruitment_ratios = (
-            (self._recruitment_thresholds - 1)
-            / (self._max_recruitment_threshold - 1)
-        )
+    def _calc_adapted_firing_rates(
+        self,
+        excitations: ndarray,
+        step_size: float,
+    ) -> ndarray:
+        """
+        Calculate the firing rate for the given excitation including motor
+        neuron fatigue (adaptation).
+        """
+        firing_rates = self._calc_firing_rates(excitations)
+        self._update_recruitment_durations(firing_rates, step_size)
+        adaptations = self._calc_adaptations(firing_rates)
 
-        print("MU 60 Min recruitment thresh: ", self._recruitment_thresholds[59])
-
-        print("Recruitment ratio:", recruitment_ratios[59])
-
-        return self._adaptation_magnitude \
-            * (firing_rates -
-               self._min_firing_rate +
-               self._derecruitment_delta) \
-            * recruitment_ratios
-
-    def _calc_adaptations(self, firing_rates: ndarray, cur_time: int) -> ndarray:
-        max_adapt = self._calc_max_adaptations(firing_rates)
-        exponent = -1 * (cur_time - self._recruitment_times) / self._adaptation_time_constant
-        adapt_scale = 1 - np.exp(exponent)
-        adaptations = max_adapt * adapt_scale
-        # Zero out negative values
-        adaptations[adaptations < 0] = 0.0
-        return adaptations
+        adapted_firing_rates = firing_rates - adaptations
+        return adapted_firing_rates
 
     def _calc_firing_rates(self, excitations: ndarray) -> ndarray:
         """
@@ -180,58 +171,6 @@ class PotvinMotorNeuronPool(Model):
 
         return firing_rates
 
-    def _calc_adapted_firing_rates(
-        self,
-        excitations: ndarray,
-        cur_time: int
-    ) -> ndarray:
-        """
-        Calculate the firing rate for the given excitation including motor
-        neuron fatigue (adaptation).
-        """
-        firing_rates = self._calc_firing_rates(excitations)
-        adaptations = self._calc_adaptations(firing_rates, cur_time)
-        return firing_rates - adaptations
-
-    @staticmethod
-    def _calc_peak_firing_rates(
-        max_firing_rate_first_unit: int,
-        max_firing_rate_last_unit: int,
-        max_recruitment_threshold: int,
-        recruitment_thresholds: ndarray,
-    ) -> ndarray:
-        """
-        Calculate peak firing rates for each motor neuron
-        """
-        firing_rate_range = (
-            max_firing_rate_first_unit - max_firing_rate_last_unit
-        )
-        first_recruitment_thresh = recruitment_thresholds[0]
-        recruitment_thresh_range = (
-            max_recruitment_threshold - first_recruitment_thresh
-        )
-        temp_thresholds = (
-            recruitment_thresholds - first_recruitment_thresh
-        )
-        temp_thresholds /= recruitment_thresh_range
-        return (
-            max_firing_rate_first_unit - (firing_rate_range * temp_thresholds)
-        )
-
-    @staticmethod
-    def _calc_recruitment_thresholds(
-        motor_unit_count: int,
-        max_recruitment_threshold: int
-    ) -> ndarray:
-        """
-        Calculate recruitment thresholds for each motor neuron
-        """
-        motor_unit_indices = np.arange(1, motor_unit_count + 1)
-
-        r_log = np.log(max_recruitment_threshold)
-        r_exponent = (r_log * (motor_unit_indices - 1)) / (motor_unit_count - 1)
-        return np.exp(r_exponent)
-
     @staticmethod
     def _inner_calc_firing_rates(
         excitations: ndarray,
@@ -252,6 +191,68 @@ class PotvinMotorNeuronPool(Model):
         firing_rates[above_peak_indices] = peak_firing_rates[above_peak_indices]
 
         return firing_rates
+
+    def _update_recruitment_durations(self, firing_rates: ndarray, step_size: float) -> None:
+        """
+        Increment the on duration for each on motor unit by step_size
+        TODO: Decay the on duration or reset it after some period
+        """
+        on_indices = np.nonzero(firing_rates)
+        self._recruitment_durations[on_indices] += step_size
+
+    def _calc_adaptations(self, firing_rates: ndarray) -> ndarray:
+        adapt_curve = self._calc_adaptations_curve(firing_rates)
+        # From Eq. (12)
+        exponent = -1 * (self._recruitment_durations / self._adaptation_time_constant)
+        adapt_scale = 1 - np.exp(exponent)
+        adaptations = adapt_curve * adapt_scale
+        # Zero out negative values
+        adaptations[adaptations < 0] = 0.0
+        return adaptations
+
+    def _calc_adaptations_curve(self, firing_rates: ndarray) -> ndarray:
+        """
+        Calculates q(i) from Eq. (13)
+        """
+        ratios = (self._recruitment_thresholds - 1) / (self._max_recruitment_threshold - 1)
+        adaptations = self._adaptation_magnitude * (firing_rates - self._min_firing_rate + self._derecruitment_delta) * ratios
+        return adaptations
+
+    @staticmethod
+    def _calc_peak_firing_rates(
+        max_firing_rate_first_unit: int,
+        max_firing_rate_last_unit: int,
+        max_recruitment_threshold: int,
+        recruitment_thresholds: ndarray,
+    ) -> ndarray:
+        """
+        Calculate peak firing rates for each motor neuron
+
+        frdiff = pfr1 - pfrL
+        frp = pfr1 - (frdiff * ((recruit_thresh[n] - recruit_thresh[1]) / (r - recruit_thresh[1])))
+        """
+        firing_rate_range = max_firing_rate_first_unit - max_firing_rate_last_unit
+        rates = max_firing_rate_first_unit \
+            - (firing_rate_range
+                * ((recruitment_thresholds - recruitment_thresholds[0])
+                    / (max_recruitment_threshold - recruitment_thresholds[0])))
+        return rates
+
+    @staticmethod
+    def _calc_recruitment_thresholds(
+        motor_unit_count: int,
+        max_recruitment_threshold: int
+    ) -> ndarray:
+        """
+        Calculate recruitment thresholds for each motor neuron
+        """
+        motor_unit_indices = np.arange(1, motor_unit_count + 1)
+
+        r_log = np.log(max_recruitment_threshold)
+        r_exponent = (r_log * (motor_unit_indices - 1)) / (motor_unit_count - 1)
+        return np.exp(r_exponent)
+
+
 
     def step(self, motor_pool_input: ndarray) -> ndarray:
         """

@@ -12,16 +12,16 @@ motor_unit_count = 120
 motor_unit_indices = np.arange(1, motor_unit_count + 1)
 
 # Motor Neuron Pool
-pool = PotvinMotorNeuronPool(
-    motor_unit_count,
-    50
-)
+pool = PotvinMotorNeuronPool(motor_unit_count)
 
 # Fibers
-fibers = PotvinMuscleFibers(
-    motor_unit_count,
-    100
-)
+fibers = PotvinMuscleFibers(motor_unit_count)
+
+# excitations = np.full(motor_unit_count, 10.0)
+# firing_rates = pool._calc_firing_rates(excitations)
+# normalized_firing_rates = fibers._normalize_firing_rates(firing_rates)
+# normalized_forces = fibers._calc_normalized_forces(normalized_firing_rates)
+# forces = fibers._calc_inst_forces(normalized_forces)
 
 # Motor Neuron Pool Charts
 if False:
@@ -40,7 +40,7 @@ if False:
         plot(fig, filename='recruitment-thresholds.html')
 
     # Peak Firing Rates
-    if False:
+    if True:
         fig = go.Figure(
             data=[go.Scatter(
                 x=motor_unit_indices,
@@ -53,7 +53,7 @@ if False:
         plot(fig, filename='peak-firing-rates.html')
 
     # Firing Rates by Excitation
-    if False:
+    if True:
         pre_calc_max = 70.0
         pre_calc_resolution = 0.1
         resolution_places = len(str(pre_calc_resolution).split(".")[1])
@@ -88,7 +88,7 @@ if False:
         plot(fig, filename='firing-rates-by-excitation.html')
 
     # Adaptations
-    if True:
+    if False:
         # Uses example values from paper for verification
         excitation = 20.0
         current_time = 15
@@ -123,7 +123,7 @@ if False:
         plot(fig, filename='adapted-firing-rates.html')
 
 # Muscle Fiber Charts
-if False:
+if True:
     # Peak Twitch Forces
     fig = go.Figure(
         data=[go.Scatter(
@@ -189,7 +189,7 @@ if False:
     plot(fig, filename='relative-fatigabilities.html')
 
 # Force Charts
-if True:
+if False:
     xs = np.arange(0.0, 70.0, 0.1)
     forces = []
     all_forces_by_excitation = []
@@ -244,7 +244,8 @@ if True:
         trace = go.Scatter(
             x=xs,
             y=t,
-            name=i + 1
+            name=i + 1,
+            mode='markers'
         )
         data.append(trace)
     fig = go.Figure(
