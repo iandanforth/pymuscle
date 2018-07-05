@@ -83,6 +83,7 @@ class PotvinMotorNeuronPool(Model):
         )
 
         # TODO should have non-numeric value if not recruited
+        self._recruitment_times = np.zeros(motor_unit_count)
         self._recruitment_durations = np.zeros(motor_unit_count)
 
         # Assign additional non-public attributes
@@ -137,14 +138,14 @@ class PotvinMotorNeuronPool(Model):
     def _calc_adapted_firing_rates(
         self,
         excitations: ndarray,
-        step_size: float,
+        current_time: float
     ) -> ndarray:
         """
         Calculate the firing rate for the given excitation including motor
         neuron fatigue (adaptation).
         """
         firing_rates = self._calc_firing_rates(excitations)
-        self._update_recruitment_durations(firing_rates, step_size)
+        self._update_recruitment_durations(firing_rates, current_time)
         adaptations = self._calc_adaptations(firing_rates)
 
         adapted_firing_rates = firing_rates - adaptations
@@ -192,13 +193,19 @@ class PotvinMotorNeuronPool(Model):
 
         return firing_rates
 
-    def _update_recruitment_durations(self, firing_rates: ndarray, step_size: float) -> None:
+    def _update_recruitment_durations(
+        self,
+        firing_rates: ndarray,
+        current_time: float
+    ) -> None:
         """
         Increment the on duration for each on motor unit by step_size
         TODO: Decay the on duration or reset it after some period
         """
-        on_indices = np.nonzero(firing_rates)
-        self._recruitment_durations[on_indices] += step_size
+        indices = (firing_rates > 0) & (self._recruitment_times == 0)
+        self._recruitment_times[indices] = current_time
+        self._recruitment_durations = current_time - self._recruitment_times
+        print(self._recruitment_durations)
 
     def _calc_adaptations(self, firing_rates: ndarray) -> ndarray:
         adapt_curve = self._calc_adaptations_curve(firing_rates)

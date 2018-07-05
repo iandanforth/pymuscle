@@ -90,7 +90,7 @@ class PotvinMuscleFibers(Model):
         Updates current twitch forces and contraction times.
         """
         # Instantaneous fatigue rate
-        fatigues = (self._nominal_fatigabilities * normalized_forces) / step_size
+        fatigues = (self._nominal_fatigabilities * normalized_forces) * step_size
         self._current_twitch_forces -= fatigues
         # Zero out negative values
         self._current_twitch_forces[self._current_twitch_forces < 0] = 0.0
