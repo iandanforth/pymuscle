@@ -33,13 +33,13 @@ class Muscle(object):
     Usage::
 
         from pymuscle import (Muscle,
-                              Potvin2017MuscleFibers,
-                              Potvin2017MotorNeuronPool)
+                              Potvin2017MotorNeuronPool as Pool,
+                              Potvin2017MuscleFibers as Fibers)
 
         motor_unit_count = 60
         muscle = Muscle(
-            PotvinMotorNeuronPool(motor_unit_count),
-            PotvinMuscleFibers(motor_unit_count),
+            Pool(motor_unit_count),
+            Fibers(motor_unit_count),
         )
         excitation = 32.0
         force = muscle.step(excitation, 1 / 50.0)

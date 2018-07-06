@@ -57,7 +57,8 @@ class Potvin2017MotorNeuronPool(Model):
       motor_unit_count = 60
       pool = Pool(motor_unit_count)
       excitation = np.full(motor_unit_count, 10.0)
-      firing_rates = pool.step(excitation)
+      step_size = 1 / 50.0
+      firing_rates = pool.step(excitation, step_size)
     """
     def __init__(
         self,

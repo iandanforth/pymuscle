@@ -119,7 +119,6 @@ class Potvin2017MuscleFibers(Model):
         force capacity relative to our peak force capacity.
         From Eq. (11)
         """
-        print('foo - ct')
         force_loss_pcts = 1 - (self._current_twitch_forces / self._peak_twitch_forces)
         inc_pcts = 1 + self._contraction_time_change_ratio * force_loss_pcts
         self._current_contraction_times = self._contraction_times * inc_pcts
