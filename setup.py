@@ -23,6 +23,7 @@ VERSION = None
 # What packages are required for this module to be executed?
 REQUIRED = [
     'numpy',
+    'plotly'
 ]
 
 # The rest you shouldn't have to touch too much :)

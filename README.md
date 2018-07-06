@@ -10,16 +10,17 @@ PyMuscle can be used to enhance the realism of motor control for simulated
 agents. To get you started we provide a [toy example project](https://github.com/iandanforth/pymuscle/tree/master/examples) 
 which uses PyMuscle in a simulation of arm curl and extension.
 
-This model and the associated code is based on "A motor unit-based model of muscle fatigue" 
+Out of the box we provide a motor neuron pool model and a muscle fiber model
+based on "A motor unit-based model of muscle fatigue" 
 ([Potvin and Fuglevand, 2017](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005581)).
 If you use this library as part of your research please cite that paper.
 
 ## More about PyMuscle
 
 Motor control in biological creatures is complex. PyMuscle allows you to capture
-some of that complexity while remaining [performant](#performance). It provides greater detail 
-than sending torque values to simulated motors-as-joints but less detail (and 
-computational cost) than a full biochemical model.
+some of that complexity while remaining [performant](#performance). It provides 
+greater detail than sending torque values to simulated motors-as-joints but 
+less detail (and computational cost) than a full biochemical model.
 
 PyMuscle is not tied to a particular physics library and can be used with a 
 variety of muscle body simulations. PyMuscle focuses on the relationship between 
@@ -103,7 +104,8 @@ Fuglevand, 2017.
 
 ```python
 
-from pymuscle import Muscle
+import numpy as np
+from pymuscle import PotvinMuscle as Muscle
 from pymuscle.vis import PotvinChart
 
 step_size = 1 / 50.0  # 50 frames per second
@@ -114,12 +116,9 @@ total_steps = int(sim_duration / step_size)
 outputs = []
 capacities = []
 for _ in range(total_steps):
-    # Get a random valid input for the muscle
-    # In the default case this is an (120, 1) array
-    # Note: PyMuscle uses OpenAI naming conventions. action ~= input
-    action = muscle.action_space.sample()
+    excitation = np.random.uniform()
     # Update the simulation
-    muscle.step(action)
+    output = muscle.step(excitation, step_size)
     # Inspect the state of the muscle
     output = muscle.state.motor_units.output  # A per-motor-unit output value
     capacity = muscle.state.motor_units.capacity  # Max output per unit which decreases with fatigue
@@ -216,12 +215,9 @@ or close your terminal and start a new one.
 
 # Performance
 
-PyMuscle aims to be fast. We use [PyTorch](https://pytorch.org/) to get fast 
-tensor computation on both CPUs and GPUs. PyMuscle is single-process but may be
-extended to multi-process systems in the future.
-
-Our long-term goal is to enable human-scale motor unit simulation at many
-multiples of real time. (Given sufficient compute resources)
+PyMuscle aims to be fast. We use Numpy to get fast vector computation. PyMuscle
+is currently a single-process but may be extended to multi-process systems in 
+the future and GPU computation through the integration of [PyTorch](https://pytorch.org/).
 
 # Limitations
 
