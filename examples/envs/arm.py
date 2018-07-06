@@ -9,10 +9,10 @@ try:
     from pymuscle import Muscle
 except ImportError:
     sys.path.append("..")
-    from pymuscle import Muscle
+    from pymuscle import PotvinMuscle as Muscle
 
 
-class PyMunkArmEnv(gym.Env):
+class PymunkArmEnv(gym.Env):
     """
     Single joint arm with opposing muscles.
     """
@@ -27,17 +27,13 @@ class PyMunkArmEnv(gym.Env):
         self.brach, self.tricep = self._add_arm()
 
         # Instantiate the PyMuscles
-        brach_motor_unit_count = 5
-        self.brach_muscle = Muscle(brach_motor_unit_count)
-        tricep_motor_unit_count = 5
-        self.tricep_muscle = Muscle(tricep_motor_unit_count)
-
-        # Provide a combined space to define a valid input
-        total_space = brach_motor_unit_count + tricep_motor_unit_count
-        self.input_space = Space(total_space)
+        apply_fatigue = False
+        brach_motor_unit_count = 100
+        self.brach_muscle = Muscle(brach_motor_unit_count, apply_fatigue)
+        tricep_motor_unit_count = 100
+        self.tricep_muscle = Muscle(tricep_motor_unit_count, apply_fatigue)
 
         self.frames = 0
-        self.stiffness_delta = 50
 
     def _init_sim(self):
         pygame.init()
@@ -146,6 +142,9 @@ class PyMunkArmEnv(gym.Env):
         # Check for user input
         self._handle_keys()
 
+        # Scale input to match the expected range of the muscle sim
+        input_array = np.array(input_array) * 67.0
+
         if debug:
             print(input_array)
 
@@ -154,10 +153,8 @@ class PyMunkArmEnv(gym.Env):
         self.frames += 1
 
         # Advance muscle sim and sync with physics sim
-        self.brach_muscle.step(input_array[0], step_size)  # TODO: Super janky fix this
-        brach_output = self.brach_muscle.total_fiber_output
-        self.tricep_muscle.step(input_array[1], step_size)
-        tricep_output = self.tricep_muscle.total_fiber_output
+        brach_output = self.brach_muscle.step(input_array[0], step_size)
+        tricep_output = self.tricep_muscle.step(input_array[1], step_size)
 
         if debug:
             print("Brach Total Output: ", brach_output)
@@ -173,3 +170,8 @@ class PyMunkArmEnv(gym.Env):
         self.screen.fill((255, 255, 255))
         self.space.debug_draw(self.draw_options)
         pygame.display.flip()
+
+    def reset(self):
+        if self.space:
+            del self.space
+        self._init_sim()

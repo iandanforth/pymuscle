@@ -13,10 +13,11 @@ motor_unit_count = 120
 motor_unit_indices = np.arange(1, motor_unit_count + 1)
 
 # Motor Neuron Pool
-pool = Pool(motor_unit_count)
+apply_fatigue = True
+pool = Pool(motor_unit_count, apply_fatigue=apply_fatigue)
 
 # Fibers
-fibers = Fibers(motor_unit_count)
+fibers = Fibers(motor_unit_count)  # Disable fatigue below if desired
 
 
 def get_force(excitations, step_size):
@@ -24,7 +25,7 @@ def get_force(excitations, step_size):
     normalized_firing_rates = fibers._normalize_firing_rates(firing_rates)
     normalized_forces = fibers._calc_normalized_forces(normalized_firing_rates)
     current_forces = fibers._calc_current_forces(normalized_forces)
-    total_force = fibers._calc_total_inst_force(current_forces)
+    total_force = np.sum(current_forces)
     return firing_rates, normalized_forces, current_forces, total_force
 
 
@@ -65,7 +66,8 @@ while sim_time < sim_duration:
     # We're now at the correct excitation level to generate target_force
     firing_rates, normalized_forces, current_forces, total_force = get_force(excitations, time_inc)
     # Update fatigue
-    fibers._apply_fatigue(normalized_forces, time_inc)
+    if apply_fatigue:
+        fibers._update_fatigue(normalized_forces, time_inc)
     # Record our step
     sim_time += time_inc
     step_counter += 1

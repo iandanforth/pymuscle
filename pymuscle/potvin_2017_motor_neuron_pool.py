@@ -74,6 +74,7 @@ class Potvin2017MotorNeuronPool(Model):
         adaptation_magnitude: float = 0.67,
         adaptation_time_constant: float = 22.0,
         max_duration: float = 20000.0,
+        apply_fatigue: bool = True
     ):
         self._recruitment_thresholds = self._calc_recruitment_thresholds(
             motor_unit_count,
@@ -97,6 +98,7 @@ class Potvin2017MotorNeuronPool(Model):
         self._adaptation_magnitude = adaptation_magnitude
         self._adaptation_time_constant = adaptation_time_constant
         self._max_duration = max_duration
+        self._apply_fatigue = apply_fatigue
 
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
@@ -174,17 +176,17 @@ class Potvin2017MotorNeuronPool(Model):
         """
         assert (len(excitations) == len(self._recruitment_thresholds))
 
-        # if self._firing_rates_by_excitation:
-        #     excitation = excitations[0]  # TODO - Support variations
-        #     firing_rates = self._firing_rates_by_excitation[excitation]
-        # else:
-        firing_rates = self._inner_calc_firing_rates(
-            excitations,
-            self._recruitment_thresholds,
-            self._firing_gain,
-            self._min_firing_rate,
-            self._peak_firing_rates
-        )
+        if self._firing_rates_by_excitation:
+            excitation = excitations[0]  # TODO - Support variations
+            firing_rates = self._firing_rates_by_excitation[excitation]
+        else:
+            firing_rates = self._inner_calc_firing_rates(
+                excitations,
+                self._recruitment_thresholds,
+                self._firing_gain,
+                self._min_firing_rate,
+                self._peak_firing_rates
+            )
 
         return firing_rates
 
@@ -230,6 +232,10 @@ class Potvin2017MotorNeuronPool(Model):
         :param firing_rates: Array of activities for each motor neuron.
         :param step_size: How far to advance time in this step.
         """
+        # If we don't update durations, no fatigue will occur.
+        if not self._apply_fatigue:
+            return
+
         on = firing_rates > 0
         self._recruitment_durations[on] += step_size
         # TODO: Enable as a recovery mechanism

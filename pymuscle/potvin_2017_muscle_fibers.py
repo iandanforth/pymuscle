@@ -34,10 +34,10 @@ class Potvin2017MuscleFibers(Model):
 
     Usage::
 
-      from pymuscle import PotvinMuscleFibers
+      from pymuscle import Potvin2017MuscleFibers as Fibers
 
       motor_unit_count = 60
-      fibers = PotvinMuscleFibers(motor_unit_count)
+      fibers = Fibers(motor_unit_count)
       motor_neuron_firing_rates = np.rand(motor_unit_count) * 10.0
       force = fibers.step(motor_neuron_firing_rates)
     """
@@ -51,7 +51,8 @@ class Potvin2017MuscleFibers(Model):
         fatigue_factor_first_unit: float = 0.0125,
         max_fatigue_rate: float = 0.0225,
         fatigability_range: int = 180,
-        contraction_time_change_ratio: float = 0.379
+        contraction_time_change_ratio: float = 0.379,
+        apply_fatigue: bool = True
     ):
         self._peak_twitch_forces = self._calc_peak_twitch_forces(
             motor_unit_count,
@@ -81,13 +82,23 @@ class Potvin2017MuscleFibers(Model):
 
         # Assing other non-public attributes
         self._contraction_time_change_ratio = contraction_time_change_ratio
+        self._apply_fatigue = apply_fatigue
 
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
 
-    def _apply_fatigue(self, normalized_forces: ndarray, step_size: float) -> None:
+    def _update_fatigue(
+        self,
+        normalized_forces: ndarray,
+        step_size: float
+    ) -> None:
         """
         Updates current twitch forces and contraction times.
+
+        :param normalized_forces:
+            Array of scaled forces. Used to weight how much fatigue will be
+            generated in this step.
+        :param step_size: How far time has advanced in this step.
         """
         # Instantaneous fatigue rate
         fatigues = (self._nominal_fatigabilities * normalized_forces) * step_size
@@ -96,12 +107,19 @@ class Potvin2017MuscleFibers(Model):
         self._current_twitch_forces[self._current_twitch_forces < 0] = 0.0
         self._update_contraction_times()
 
-    def _update_contraction_times(self):
+    def _apply_recovery(self):
+        """
+        Updates twitch forces and contraction times.
+        """
+        raise NotImplementedError
+
+    def _update_contraction_times(self) -> None:
         """
         Update our current contraction times as a function of our current
         force capacity relative to our peak force capacity.
         From Eq. (11)
         """
+        print('foo - ct')
         force_loss_pcts = 1 - (self._current_twitch_forces / self._peak_twitch_forces)
         inc_pcts = 1 + self._contraction_time_change_ratio * force_loss_pcts
         self._current_contraction_times = self._contraction_times * inc_pcts
@@ -128,6 +146,17 @@ class Potvin2017MuscleFibers(Model):
         Results in a smooth range from max_contraction_time at the first
         motor unit down to max_contraction_time / contraction_time range
         for the last motor unit
+
+        :param max_twitch_amplitude:
+            Largest force a motor unit in this muscle can produce.
+        :param max_contraction_time:
+            Slowest contraction time for a motor unit in this muscle.
+        :param contraction_time_range:
+            The ratio between the slowest and the fastest contraction times
+            in this muscle.
+        :param peak_twitch_forces:
+            An array of all the largest forces that each motor unit can
+            produce.
         """
 
         # Fuglevand 93 version - very slightly different values
@@ -147,7 +176,11 @@ class Potvin2017MuscleFibers(Model):
         max_twitch_amplitude: int
     ) -> ndarray:
         """
-        Calculate the peak twitch force for each motor unit
+        Pure function to calculate the peak twitch force for each motor unit.
+
+        :param motor_unit_count: The number of motor units in the pool.
+        :param max_twitch_amplitude:
+            Largest force a motor unit in this muscle can produce.
         """
         motor_unit_indices = np.arange(1, motor_unit_count + 1)
         t_log = np.log(max_twitch_amplitude)
@@ -162,9 +195,21 @@ class Potvin2017MuscleFibers(Model):
         peak_twitch_forces: ndarray
     ) -> ndarray:
         """
-        Calculate *nominal* fatigue factors for each motor unit
+        Pure function to calculate nominal fatigue factors for each motor unit.
 
         Taken more from the matlab code than the paper.
+
+        :param motor_unit_count: The number of motor units in this muscle.
+        :param fatigability_range:
+            The ratio between the maximum fatigue rate of the strongest motor
+            unit (which fatigues the fastest) and the fatigue rate of the
+            weakest motor unit.
+        :param max_fatigue_rate:
+            Largest percentage drop per unit time of twitch strength for the
+            strongest motor unit.
+        :param peak_twitch_forces:
+            An array of all the largest forces that each motor unit can
+            produce.
         """
         motor_unit_indices = np.arange(1, motor_unit_count + 1)
         f_log = np.log(fatigability_range)
@@ -174,17 +219,11 @@ class Potvin2017MuscleFibers(Model):
 
     def _normalize_firing_rates(self, firing_rates: ndarray) -> ndarray:
         """
-        TODO: Should this be moved into Pool as a static method?
+        Calculate the effective impact of a given set of firing rates on
+        muscle fibers which have diverse contraction times and may be fatigued.
 
         :param firing_rates: Should be the result of pool._calc_adapted_firing_rates()
-
         """
-
-        # HACK: Subtracting out the min firing rate here gives me the curves
-        # I expect ... but why? See Issue #25
-        # firing_rates -= 8
-        # firing_rates[firing_rates < 0] = 0.0
-
         # Divide by 1000 here as firing rates are per second where contraction
         # times are in milliseconds.
         return self._current_contraction_times * (firing_rates / 1000)
@@ -195,6 +234,10 @@ class Potvin2017MuscleFibers(Model):
         Calculate motor unit force, relative to its peak force. Force grows
         in a linear fashion up to 0.4 normalized firing rate and then in a
         sigmoid curve afterward.
+
+        :param normalized_firing_rates:
+            An array of firing rates scaled by the current contraction times
+            for each motor unit.
         """
         normalized_forces = copy(normalized_firing_rates)
         linear_threshold = 0.4  # Values are non-linear above this value
@@ -212,37 +255,36 @@ class Potvin2017MuscleFibers(Model):
         normalized_forces[above_thresh_indices] = 1 - np.exp(exponent)
         return normalized_forces
 
-    def _calc_inst_forces(self, normalized_forces: ndarray) -> ndarray:
-        """
-        Scales the normalized forces for each motor unit by their peak 
-        twitch forces
-        """
-        return normalized_forces * self._peak_twitch_forces
-
     def _calc_current_forces(self, normalized_forces: ndarray) -> ndarray:
         """
         Scales the normalized forces for each motor unit by their current
-        remaining twitch force capacity. i.e. like _calc_inst_forces but
-        includes fatigue.
+        remaining twitch force capacity.
+
+        :param normalized_forces: An array of forces scaled between 0 and 1
         """
         return normalized_forces * self._current_twitch_forces
 
-    @staticmethod
-    def _calc_total_inst_force(inst_forces: ndarray) -> ndarray:
-        """
-        Returns the sum of all instantaneous forces for the motor units
-        """
-        return np.sum(inst_forces)
-
-    def _calc_total_fiber_force(self, firing_rates: ndarray) -> ndarray:
+    def _calc_total_fiber_force(
+        self,
+        firing_rates: ndarray,
+        step_size: float
+    ) -> ndarray:
         """
         Calculates the total instantaneous force produced by all fibers for
         the given instantaneous firing rates.
+        :param firing_rates:
+            An array of firing rates calculated by a compatible Pool class.
+        :param step_size: How far time has advanced in this step.
         """
-        normalized_firing_rates = self._normalize_firing_rates_w_fatigue(firing_rates)
+        normalized_firing_rates = self._normalize_firing_rates(firing_rates)
         normalized_forces = self._calc_normalized_forces(normalized_firing_rates)
-        inst_forces = self._calc_inst_forces(normalized_forces)
-        return self._calc_total_inst_force(inst_forces)
+        current_forces = self._calc_current_forces(normalized_forces)
+        # Apply fatigue as last step
+        if self._apply_fatigue:
+            self._update_fatigue(normalized_forces, step_size)
+
+        total_force = np.sum(current_forces)
+        return total_force
 
     def step(
         self,
@@ -254,5 +296,9 @@ class Potvin2017MuscleFibers(Model):
 
         Returns the total instantaneous force produced by all fibers for
         the given input from the motor neuron pool.
+
+        :param motor_pool_output:
+            An array of firing rates calculated by a compatible Pool class.
+        :param step_size: How far time has advanced in this step.
         """
-        return self._calc_total_fiber_force(motor_pool_output)
+        return self._calc_total_fiber_force(motor_pool_output, step_size)

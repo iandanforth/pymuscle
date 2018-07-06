@@ -75,7 +75,7 @@ class Muscle(object):
                 motor_pool_input
             )
 
-        motor_pool_output = self._pool.step(motor_pool_input)
+        motor_pool_output = self._pool.step(motor_pool_input, step_size)
         return self._fibers.step(motor_pool_output)
 
 
@@ -88,13 +88,18 @@ class PotvinMuscle(Muscle):
     def __init__(
         self,
         motor_unit_count: int,
+        apply_fatigue: bool = True,
         pre_calc_firing_rates: bool = False
     ):
         pool = Pool(
             motor_unit_count,
+            apply_fatigue=apply_fatigue,
             pre_calc_firing_rates=pre_calc_firing_rates
         )
-        fibers = Fibers(motor_unit_count)
+        fibers = Fibers(
+            motor_unit_count,
+            apply_fatigue=apply_fatigue
+        )
 
         super().__init__(
             motor_neuron_pool_model=pool,

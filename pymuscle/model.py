@@ -1,3 +1,6 @@
+from numpy import ndarray
+
+
 class Model(object):
     """
     Base model class from which other models should inherit
@@ -8,7 +11,7 @@ class Model(object):
     ):
         self.motor_unit_count = motor_unit_count
 
-    def step(self):
+    def step(self, inputs: ndarray, step_size: float):
         """
         Child classes must implement this method.
         """

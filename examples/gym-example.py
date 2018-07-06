@@ -10,7 +10,6 @@ register(
 
 def main():
     env = gym.make("PymunkArmEnv-v0")
-    env.reset()
 
     step_size = 1 / 50.0
     sim_duration = 60  # seconds
@@ -29,7 +28,7 @@ def main():
 
         env.step(
             [brachialis_input, tricep_input],
-            step_size, debug=False
+            step_size, debug=True
         )
         env.render()
 

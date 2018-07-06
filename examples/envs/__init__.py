@@ -1,1 +1,1 @@
-from .arm import PyMunkArmEnv # noqa
+from .arm import PymunkArmEnv # noqa
