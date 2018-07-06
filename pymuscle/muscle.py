@@ -1,8 +1,8 @@
 import numpy as np
 from typing import Union
 
-from .potvin_muscle_fibers import PotvinMuscleFibers
-from .potvin_motor_neuron_pool import PotvinMotorNeuronPool
+from .potvin_2017_muscle_fibers import Potvin2017MuscleFibers as Fibers
+from .potvin_2017_motor_neuron_pool import Potvin2017MotorNeuronPool as Pool
 from .model import Model
 
 
@@ -32,7 +32,9 @@ class Muscle(object):
 
     Usage::
 
-        from pymuscle import Muscle, PotvinMuscleFibers, PotvinMotorNeuronPool
+        from pymuscle import (Muscle,
+                              Potvin2017MuscleFibers,
+                              Potvin2017MotorNeuronPool)
 
         motor_unit_count = 60
         muscle = Muscle(
@@ -88,43 +90,13 @@ class PotvinMuscle(Muscle):
         motor_unit_count: int,
         pre_calc_firing_rates: bool = False
     ):
-        pool = PotvinMotorNeuronPool(
+        pool = Pool(
             motor_unit_count,
             pre_calc_firing_rates=pre_calc_firing_rates
         )
-        fibers = PotvinMuscleFibers(motor_unit_count)
+        fibers = Fibers(motor_unit_count)
 
         super().__init__(
             motor_neuron_pool_model=pool,
             muscle_fibers_model=fibers
         )
-
-
-if __name__ == '__main__':
-    muscle = PotvinMuscle(120, True)
-
-    # Performance Benchmarking
-    import time
-    start = time.time()
-    iterations = 10000
-    step_size = 1 / 50.0
-    for _ in range(iterations):
-        excitation = np.random.random_integers(1, 60) / 1.0  # Quick cast
-        force = muscle.step(excitation, step_size)
-    duration = time.time() - start
-    avg = duration / iterations
-
-    multiple = 100
-    real = 1.0 / 60.0
-    x_real = real / multiple
-
-    print("{} iterations took {} seconds. {} per iteration".format(
-        iterations, duration, avg)
-    )
-
-    if avg < x_real:
-        print("This is better than {}x real time :)".format(multiple))
-    else:
-        print("This is worse than {}x real time. :(".format(multiple))
-
-    print("Multiple:", real / avg)

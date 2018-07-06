@@ -6,17 +6,17 @@ from plotly.offline import plot
 from copy import copy
 
 sys.path.insert(0, os.path.abspath('..'))
-from pymuscle import PotvinMuscleFibers
-from pymuscle import PotvinMotorNeuronPool
+from pymuscle import Potvin2017MuscleFibers as Fibers
+from pymuscle import Potvin2017MotorNeuronPool as Pool
 
 motor_unit_count = 120
 motor_unit_indices = np.arange(1, motor_unit_count + 1)
 
 # Motor Neuron Pool
-pool = PotvinMotorNeuronPool(motor_unit_count)
+pool = Pool(motor_unit_count)
 
 # Fibers
-fibers = PotvinMuscleFibers(motor_unit_count)
+fibers = Fibers(motor_unit_count)
 
 
 if False:

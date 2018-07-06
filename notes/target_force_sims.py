@@ -6,21 +6,21 @@ from plotly.offline import plot
 from copy import copy
 
 sys.path.insert(0, os.path.abspath('..'))
-from pymuscle import PotvinMuscleFibers
-from pymuscle import PotvinMotorNeuronPool
+from pymuscle import Potvin2017MuscleFibers as Fibers
+from pymuscle import Potvin2017MotorNeuronPool as Pool
 
 motor_unit_count = 120
 motor_unit_indices = np.arange(1, motor_unit_count + 1)
 
 # Motor Neuron Pool
-pool = PotvinMotorNeuronPool(motor_unit_count)
+pool = Pool(motor_unit_count)
 
 # Fibers
-fibers = PotvinMuscleFibers(motor_unit_count)
+fibers = Fibers(motor_unit_count)
 
 
-def get_force(excitations, current_time):
-    firing_rates = pool._calc_adapted_firing_rates(excitations, current_time)
+def get_force(excitations, step_size):
+    firing_rates = pool.step(excitations, step_size)
     normalized_firing_rates = fibers._normalize_firing_rates(firing_rates)
     normalized_forces = fibers._calc_normalized_forces(normalized_firing_rates)
     current_forces = fibers._calc_current_forces(normalized_forces)
@@ -31,11 +31,11 @@ def get_force(excitations, current_time):
 # Target Force - 20% MVC
 max_force = 2216.0
 max_excitation = 67.0
-target_percent = 50
+target_percent = 100
 target_force = max_force * (target_percent / 100)
 e_inc = 0.01
 sim_time = 0.0
-sim_duration = 100.0
+sim_duration = 200.0
 time_inc = 0.1
 force_capacities = fibers._peak_twitch_forces
 total_peak_capacity = sum(force_capacities)
@@ -48,7 +48,7 @@ all_total_capacities = []
 all_firing_rates = []
 current_forces = []
 hit_max_excite = False
-excitations = np.full(motor_unit_count, 31.0)
+excitations = np.full(motor_unit_count, 1.0)
 while sim_time < sim_duration:
     total_force = 0.0
     excitations = excitations - (2 * e_inc)  # Start the search again from a slightly lower value
@@ -59,11 +59,11 @@ while sim_time < sim_duration:
                 print("Hit max excitation: ", sim_time)
                 hit_max_excite = True
             break
-        _, _, _, total_force = get_force(excitations, sim_time)
+        _, _, _, total_force = get_force(excitations, 0) # Don't advance time here
         excitations += e_inc
 
     # We're now at the correct excitation level to generate target_force
-    firing_rates, normalized_forces, current_forces, total_force = get_force(excitations, sim_time)
+    firing_rates, normalized_forces, current_forces, total_force = get_force(excitations, time_inc)
     # Update fatigue
     fibers._apply_fatigue(normalized_forces, time_inc)
     # Record our step
