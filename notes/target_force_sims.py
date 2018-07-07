@@ -2,6 +2,7 @@ import sys
 import os
 import numpy as np
 import plotly.graph_objs as go
+import colorlover as cl
 from plotly.offline import plot
 from copy import copy
 
@@ -79,7 +80,66 @@ while sim_time < sim_duration:
     all_total_capacities.append(total_capacity / total_peak_capacity)
     all_firing_rates.append(firing_rates)
 
+
+###############################################################################
+# Visualization Code
+
 times = np.arange(0.0, sim_duration, time_inc)
+
+# Setting colors for plot.
+potvin_scheme = [
+    'rgb(115, 0, 0)',
+    'rgb(252, 33, 23)',
+    'rgb(230, 185, 43)',
+    'rgb(107, 211, 100)',
+    'rgb(52, 211, 240)',
+    'rgb(36, 81, 252)',
+    'rgb(0, 6, 130)'
+]
+# It's hacky but also sorta cool.
+c = cl.to_rgb(cl.interp(potvin_scheme, motor_unit_count))
+c = [val.replace('rgb', 'rgba') for val in c]
+c = [val.replace(')', ',{})') for val in c]
+
+
+def get_color(trace_index: int) -> str:
+    # The first and every 20th trace should be full opacity
+    alpha = 0.2
+    if trace_index == 0 or ((trace_index + 1) % 20 == 0):
+        alpha = 1.0
+    color = c[trace_index].format(alpha)
+    return color
+
+
+def get_annotation(
+    trace_index: int,
+    x: int,
+    y_offset: float,
+    trace_data: list,
+    step_size: float
+) -> dict:
+    """
+    Line annotations.
+    """
+    y = trace_data[int(round(x / step_size))] + y_offset
+    trace_index += 1
+    prefix = ""
+    if trace_index == 1:
+        prefix = "MU"
+    text = "<em>{}{}</em>".format(prefix, str(trace_index))
+    annotation = dict(
+        x=x,
+        y=y,
+        text=text,
+        font=dict(
+            family='Arial',
+            size=16,
+            color=get_color(i),
+        ),
+        showarrow=False
+    )
+    return annotation
+
 
 if True:
     # 2.A
@@ -108,61 +168,169 @@ if True:
     fig = go.Figure(
         data=a_data,
         layout=go.Layout(
-            title='Motor Unit Forces by Time'
+            title='Excitation, Force, & Force capacity by Time',
+            yaxis=dict(
+                title='Excitation, force, & force capacity (% max.)'
+            ),
+            xaxis=dict(
+                title='Time (s)'
+            )
         )
     )
-    plot(fig, filename='fig-2-a.html')
+    plot(fig, filename='totals-by-time.html')
 
 if True:
     # Per Motor Unit Force
     all_array = np.array(all_forces).T
     data = []
+    annotations = []
+    anno_offsets = {
+        0: 20,
+        19: 30,
+        39: 40,
+        59: 45,
+        79: 17,
+        99: 56,
+        119: 170
+    }
     for i, t in enumerate(all_array):
         trace = go.Scatter(
             x=times,
             y=t,
-            name=i + 1
+            name=i + 1,
+            marker=dict(
+                color=get_color(i)
+            ),
         )
         data.append(trace)
+
+        if i == 0 or ((i + 1) % 20 == 0):
+            annotation = get_annotation(
+                trace_index=i,
+                x=anno_offsets[i],
+                y_offset=1.2,
+                trace_data=t,
+                step_size=time_inc
+            )
+            annotations.append(annotation)
+
+    layout = go.Layout(
+        title='Motor Unit Forces by Time',
+        yaxis=dict(
+            title='Motor unit force (relative to MU1 tetanus)'
+        ),
+        xaxis=dict(
+            title='Time (s)'
+        )
+    )
+    layout['annotations'] = annotations
+
     fig = go.Figure(
         data=data,
-        layout=go.Layout(
-            title='Motor Unit Forces by Time'
-        ))
+        layout=layout
+    )
     plot(fig, filename='forces-by-time.html')
 
 if True:
     # 2.B - Per Motor Unit Firing Rate by Time
     all_array = np.array(all_firing_rates).T
     data = []
+    annotations = []
+    anno_offsets = {
+        0: 55,
+        19: 60,
+        39: 65,
+        59: 70,
+        79: 80,
+        99: 90,
+        119: 110
+    }
     for i, t in enumerate(all_array):
         trace = go.Scatter(
             x=times,
             y=t,
-            name=i + 1
+            name=i + 1,
+            marker=dict(
+                color=get_color(i)
+            ),
         )
         data.append(trace)
+
+        if i == 0 or ((i + 1) % 20 == 0):
+            annotation = get_annotation(
+                trace_index=i,
+                x=anno_offsets[i],
+                y_offset=-0.4,
+                trace_data=t,
+                step_size=time_inc
+            )
+            annotations.append(annotation)
+
+    layout = go.Layout(
+        title='Motor Unit Firing Rates by Time',
+        yaxis=dict(
+            title='Firing rate (Hz)'
+        ),
+        xaxis=dict(
+            title='Time (s)'
+        )
+    )
+    layout['annotations'] = annotations
+
     fig = go.Figure(
         data=data,
-        layout=go.Layout(
-            title='Motor Unit Firing Rates by Time'
-        ))
+        layout=layout
+    )
     plot(fig, filename='firing-rates-by-time.html')
 
 if True:
     # 2.D - Per Motor Unit Force Capacities by Time
     all_array = np.array(all_capacities).T
     data = []
+    annotations = []
+    anno_offsets = {
+        0: 55,
+        19: 60,
+        39: 65,
+        59: 70,
+        79: 80,
+        99: 90,
+        119: 110
+    }
     for i, t in enumerate(all_array):
         trace = go.Scatter(
             x=times,
             y=t,
-            name=i + 1
+            name=i + 1,
+            marker=dict(
+                color=get_color(i)
+            ),
         )
         data.append(trace)
+
+        if i == 0 or ((i + 1) % 20 == 0):
+            annotation = get_annotation(
+                trace_index=i,
+                x=anno_offsets[i],
+                y_offset=-0.03,
+                trace_data=t,
+                step_size=time_inc
+            )
+            annotations.append(annotation)
+
+    layout = go.Layout(
+        title='Motor Unit Force Capacities by Time',
+        yaxis=dict(
+            title='Firing rate (Hz)'
+        ),
+        xaxis=dict(
+            title='Time (s)'
+        )
+    )
+    layout['annotations'] = annotations
+
     fig = go.Figure(
         data=data,
-        layout=go.Layout(
-            title='Motor Unit Force Capacities by Time'
-        ))
+        layout=layout
+    )
     plot(fig, filename='force-capacities-by-time.html')
