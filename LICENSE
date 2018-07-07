@@ -1,6 +1,6 @@
-MIT License
+MIT License + No Military Use
 
-Copyright (c) 2017 Ian Danforth
+Copyright (c) 2018 Ian Danforth
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -12,6 +12,10 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
+Using this software in source or binary format, with or without modification, 
+to develop, modify or improve software, products or programs for military use
+is not permitted without specific prior written permission.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,3 +23,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Explanation of the No Military Use Clause
+
+This meaning of this phrase includes any use by a military, not just for 
+combat. It also includes work by contractors explicitly for a military.
+
+Example Use
+
+You may incorporate this code into your own products so long as those products 
+are not primarily for military use. If you use this code in a drafting program 
+and the military used it, this would be permitted use. If you used it in a 
+drafting program for nuclear submarines, this would be a prohibited use.
+
+Developing a general use program, product or piece of software and then 
+actively selling or marketing that program, product or software to a military 
+organization would be a violation of the No Military Use clause.
+
+OSI / FSF
+
+The MIT + No Military Use License is not OSI or FSF approved. Users of the  
+MIT + No Military Use License believe that software development is not a 
+neutral act. In addition users believe that software development imposes a 
+responsiblity on developers to consider the consequences of the use of their 
+software and a responsibility to prevent its misuse. The unlimited freedoms of 
+use codified by the OSI and FSF are incompatible with this view and are 
+violated by this license. 
