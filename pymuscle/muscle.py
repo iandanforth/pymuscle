@@ -6,17 +6,6 @@ from .potvin_2017_motor_neuron_pool import Potvin2017MotorNeuronPool as Pool
 from .model import Model
 
 
-class Space(object):
-
-    def __init__(self, shape):
-        if isinstance(shape, int):
-            shape = [shape]
-        self.shape = shape
-
-    def sample(self):
-        return np.random.rand(*self.shape)
-
-
 class Muscle(object):
     """
     A user-created :class:`Muscle <Muscle>` object.
@@ -50,8 +39,15 @@ class Muscle(object):
         motor_neuron_pool_model: Model,
         muscle_fibers_model: Model,
     ):
+        assert motor_neuron_pool_model.motor_unit_count == \
+            muscle_fibers_model.motor_unit_count
+
         self._pool = motor_neuron_pool_model
         self._fibers = muscle_fibers_model
+
+    @property
+    def motor_unit_count(self):
+        return self._pool.motor_unit_count
 
     def step(
         self,

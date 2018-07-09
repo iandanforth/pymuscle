@@ -1,5 +1,12 @@
 # Project Notes / Daily Learnings
 
+## Testing
+
+Basic unit tests - pytest
+Test coverage - coverage + pytest-cov
+Fuzz testing? - hypothesis
+Multi-config testing - tox (uses virtual envs)
+
 ## Tensorflow
 
 #### Pushback on more flexible core RNNs
