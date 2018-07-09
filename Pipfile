@@ -5,12 +5,14 @@ name = "pypi"
 
 [dev-packages]
 pylint = "*"
+pytest = "*"
+coverage = "*"
+pytest-cov = "*"
 
 [packages]
-smop = "*"
 numpy = "*"
-pyyaml = "*"
 pyre-check = "*"
+plotly = "==2.7.0"
 
 [requires]
 python_version = "3.6"
