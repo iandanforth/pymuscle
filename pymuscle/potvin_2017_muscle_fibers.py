@@ -43,7 +43,7 @@ class Potvin2017MuscleFibers(Model):
     """
     def __init__(
         self,
-        motor_unit_count: int = 120,
+        motor_unit_count: int,
         max_twitch_amplitude: int = 100,
         max_contraction_time: int = 90,
         contraction_time_range: int = 3,
@@ -122,16 +122,6 @@ class Potvin2017MuscleFibers(Model):
         force_loss_pcts = 1 - (self._current_twitch_forces / self._peak_twitch_forces)
         inc_pcts = 1 + self._contraction_time_change_ratio * force_loss_pcts
         self._current_contraction_times = self._contraction_times * inc_pcts
-
-    def _calc_ct_increase_percents(self, force_losses: ndarray):
-        """
-        Calculates the percent that contraction times should increase for
-        a given loss in force.
-
-        :param force_losses: Percentage decrease in force being produced
-            by each motor unit
-        """
-        return self._contraction_time_change_ratio * force_losses
 
     @staticmethod
     def _calc_contraction_times(
@@ -300,4 +290,5 @@ class Potvin2017MuscleFibers(Model):
             An array of firing rates calculated by a compatible Pool class.
         :param step_size: How far time has advanced in this step.
         """
+        assert (len(motor_pool_output) == self.motor_unit_count)
         return self._calc_total_fiber_force(motor_pool_output, step_size)

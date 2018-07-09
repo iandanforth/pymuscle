@@ -62,7 +62,7 @@ class Potvin2017MotorNeuronPool(Model):
     """
     def __init__(
         self,
-        motor_unit_count: int = 120,
+        motor_unit_count: int,
         max_recruitment_threshold: int = 50,
         firing_gain: float = 1.0,
         min_firing_rate: int = 8,
@@ -136,7 +136,6 @@ class Potvin2017MotorNeuronPool(Model):
         )
         for i in excitation_values:
             i = round(i, resolution_places)
-            excitations += pre_calc_resolution
             self._firing_rates_by_excitation[i] = \
                 self._inner_calc_firing_rates(
                     excitations,
@@ -145,6 +144,7 @@ class Potvin2017MotorNeuronPool(Model):
                     self._min_firing_rate,
                     self._peak_firing_rates
             )
+            excitations += pre_calc_resolution
 
     def _calc_adapted_firing_rates(
         self,
@@ -175,8 +175,6 @@ class Potvin2017MotorNeuronPool(Model):
         :param excitations:
             Array of excitation levels to use as input to motor neurons.
         """
-        assert (len(excitations) == len(self._recruitment_thresholds))
-
         if self._firing_rates_by_excitation:
             excitation = excitations[0]  # TODO - Support variations
             firing_rates = self._firing_rates_by_excitation[excitation]
@@ -335,4 +333,5 @@ class Potvin2017MotorNeuronPool(Model):
             Array of excitation levels to use as input to motor neurons.
         :param step_size: How far to advance time in this step.
         """
+        assert (len(motor_pool_input) == self.motor_unit_count)
         return self._calc_adapted_firing_rates(motor_pool_input, step_size)
