@@ -49,6 +49,10 @@ class Muscle(object):
     def motor_unit_count(self):
         return self._pool.motor_unit_count
 
+    @property
+    def current_forces(self):
+        return self._fibers.current_forces
+
     def step(
         self,
         motor_pool_input: Union[float, np.ndarray],
@@ -65,7 +69,8 @@ class Muscle(object):
         """
 
         # Expand a single input to the muscle to a full array
-        if isinstance(motor_pool_input, float):
+        if isinstance(motor_pool_input, float) or \
+           isinstance(motor_pool_input, int):
             motor_pool_input = np.full(
                 self._pool.motor_unit_count,
                 motor_pool_input

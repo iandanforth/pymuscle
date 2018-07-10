@@ -37,7 +37,7 @@ target_percent = 100
 target_force = max_force * (target_percent / 100)
 e_inc = 0.01
 sim_time = 0.0
-sim_duration = 200.0
+sim_duration = 40.0
 time_inc = 1.0
 force_capacities = fibers._peak_twitch_forces
 total_peak_capacity = sum(force_capacities)
@@ -195,7 +195,7 @@ if True:
     }
     max_y = np.amax(all_array)
     for i, t in enumerate(all_array):
-        trace = go.Scatter(
+        trace = dict(
             x=times[:1],
             y=t[:1],
             name=i + 1,
@@ -220,7 +220,7 @@ if True:
     for i in range(1, len(times), int(1 / time_inc)):
         frame_data = []
         for j, t in enumerate(all_array):
-            trace = go.Scatter(
+            trace = dict(
                 x=times[:i],
                 y=t[:i],
                 name=j + 1,
@@ -236,7 +236,7 @@ if True:
         )
         frames.append(frame)
 
-    layout = go.Layout(
+    layout = dict(
         title='Motor Unit Forces by Time',
         yaxis=dict(
             title='Motor unit force (relative to MU1 tetanus)',
@@ -265,12 +265,12 @@ if True:
     )
     layout['annotations'] = annotations
 
-    fig = go.Figure(
+    fig = dict(
         data=data,
         layout=layout,
         frames=frames
     )
-    plot(fig, filename='animated-forces-by-time.html')
+    plot(fig, filename='animated-forces-by-time.html', validate=False)
 
 if False:
     # 2.B - Per Motor Unit Firing Rate by Time

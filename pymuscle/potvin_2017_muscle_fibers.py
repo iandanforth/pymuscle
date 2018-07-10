@@ -60,7 +60,7 @@ class Potvin2017MuscleFibers(Model):
         )
 
         # These will change with fatigue.
-        self._current_twitch_forces = copy(self._peak_twitch_forces)
+        self._current_peak_forces = copy(self._peak_twitch_forces)
 
         self._contraction_times = self._calc_contraction_times(
             max_twitch_amplitude,
@@ -86,6 +86,7 @@ class Potvin2017MuscleFibers(Model):
 
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
+        self.current_forces = None
 
     def _update_fatigue(
         self,
@@ -102,9 +103,9 @@ class Potvin2017MuscleFibers(Model):
         """
         # Instantaneous fatigue rate
         fatigues = (self._nominal_fatigabilities * normalized_forces) * step_size
-        self._current_twitch_forces -= fatigues
+        self._current_peak_forces -= fatigues
         # Zero out negative values
-        self._current_twitch_forces[self._current_twitch_forces < 0] = 0.0
+        self._current_peak_forces[self._current_peak_forces < 0] = 0.0
         self._update_contraction_times()
 
     def _apply_recovery(self):
@@ -119,7 +120,7 @@ class Potvin2017MuscleFibers(Model):
         force capacity relative to our peak force capacity.
         From Eq. (11)
         """
-        force_loss_pcts = 1 - (self._current_twitch_forces / self._peak_twitch_forces)
+        force_loss_pcts = 1 - (self._current_peak_forces / self._peak_twitch_forces)
         inc_pcts = 1 + self._contraction_time_change_ratio * force_loss_pcts
         self._current_contraction_times = self._contraction_times * inc_pcts
 
@@ -249,9 +250,12 @@ class Potvin2017MuscleFibers(Model):
         Scales the normalized forces for each motor unit by their current
         remaining twitch force capacity.
 
+        This method also updates the public Muscle.current_forces array.
+
         :param normalized_forces: An array of forces scaled between 0 and 1
         """
-        return normalized_forces * self._current_twitch_forces
+        self.current_forces = normalized_forces * self._current_peak_forces
+        return self.current_forces
 
     def _calc_total_fiber_force(
         self,
@@ -268,6 +272,7 @@ class Potvin2017MuscleFibers(Model):
         normalized_firing_rates = self._normalize_firing_rates(firing_rates)
         normalized_forces = self._calc_normalized_forces(normalized_firing_rates)
         current_forces = self._calc_current_forces(normalized_forces)
+
         # Apply fatigue as last step
         if self._apply_fatigue:
             self._update_fatigue(normalized_forces, step_size)
