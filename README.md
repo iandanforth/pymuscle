@@ -75,12 +75,11 @@ the same action again and again in the same way.
 
 # Installation
 
-### *** PyMuscle is under development. Please do not install yet. ***
+### *** Warning: PyMuscle is early stage and under active development. ***
 
 ## Requirements
 
-Python 3
-
+Python 3.6+
 
 ## Install
 
@@ -103,35 +102,48 @@ thresholds, and fatigue properties as used in the experiments of Potvin and
 Fuglevand, 2017.
 
 ```python
-
-import numpy as np
 from pymuscle import PotvinMuscle as Muscle
 from pymuscle.vis import PotvinChart
 
-step_size = 1 / 50.0  # 50 frames per second
-muscle = Muscle(step_size=step_size)
+# Create a Muscle with small number of motor units.
+motor_unit_count = 120
+muscle = Muscle(motor_unit_count)
 
+# Set up the simulation parameters
 sim_duration = 60  # seconds
+frames_per_second = 50
+step_size = 1 / frames_per_second
 total_steps = int(sim_duration / step_size)
-outputs = []
-capacities = []
-for _ in range(total_steps):
-    excitation = np.random.uniform()
-    # Update the simulation
-    output = muscle.step(excitation, step_size)
-    # Inspect the state of the muscle
-    output = muscle.state.motor_units.output  # A per-motor-unit output value
-    capacity = muscle.state.motor_units.capacity  # Max output per unit which decreases with fatigue
 
-    print(output)
-    print(capacity)
+# Use a constant level of excitation to more easily observe fatigue
+excitation = 40.0
+
+total_outputs = []
+outputs_by_unit = []
+print("Starting simulation ...")
+for i in range(total_steps):
+    # Calling step() updates the simulation and returns the total output
+    # produced by the muscle during this step for the given excitation level.
+    total_output = muscle.step(excitation, step_size)
+    total_outputs.append(total_output)
+    # You can also introspect the muscle to see the forces being produced
+    # by each motor unit.
+    output_by_unit = muscle.current_forces
+    outputs_by_unit.append(output_by_unit)
+    if (i % (frames_per_second * 10)) == 0:
+        print("Sim time - {} seconds ...".format(int(i / frames_per_second)))
 
 # Visualize the behavior of the motor units over time
+print("Creating chart ...")
 chart = PotvinChart(
-    step_size=step_size,
-    motor_unit_outputs=outputs,
-    motor_unit_capacities=capacities
+    outputs_by_unit,
+    step_size
 )
+# Things to note in the chart:
+#   - Some motor units (purple) are never recruited at this level of excitation
+#   - Some motor units become completely fatigued in this short time
+#   - Some motor units stabilize and decrease their rate of fatigue
+#   - Forces from the weakest motor units are almost constant the entire time
 chart.display()
 ```
 
@@ -216,7 +228,7 @@ or close your terminal and start a new one.
 # Performance
 
 PyMuscle aims to be fast. We use Numpy to get fast vector computation. PyMuscle
-is currently a single-process but may be extended to multi-process systems in 
+uses only a single process today but may be extended to multi-process in 
 the future and GPU computation through the integration of [PyTorch](https://pytorch.org/).
 
 # Limitations
@@ -230,10 +242,9 @@ motor unit input/output relationship.
 
 ## Recovery
 
-Potvin and Fuglevand 2017 explicitly models fatigue but *not* recovery. PyMuscle
-implements a simple inversion of the fatigue rules for recovery but this is not
-empirically grounded. We eagerly await the updated model from Potvin which will
-included a model of recovery.
+Potvin and Fuglevand 2017 explicitly models fatigue but *not* recovery. We 
+eagerly await the updated model from Potvin which will included a model of 
+recovery.
 
 ## Proprioception
 
