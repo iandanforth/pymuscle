@@ -15,6 +15,8 @@ based on "A motor unit-based model of muscle fatigue"
 ([Potvin and Fuglevand, 2017](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005581)).
 If you use this library as part of your research please cite that paper.
 
+We hope to extend this model and support alternative models in the future.
+
 ## More about PyMuscle
 
 Motor control in biological creatures is complex. PyMuscle allows you to capture
@@ -89,15 +91,11 @@ pip install pymuscle
 
 # Getting Started
 
-### Familiar with OpenAI's Gym?
-
-Try out the [example project](https://github.com/iandanforth/pymuscle/tree/master/examples)
-
 ### Minimal example 
 
 The Muscle class provides the primary API for the library. A Muscle can be
-heavily customized but here we use the default values. A default Muscle
-contains 120 motor units with a distribution of strengths, recruitment 
+heavily customized but here we use mainly default values. A PotvinMuscle 
+instantiated with 120 motor units has the distribution of strengths, recruitment 
 thresholds, and fatigue properties as used in the experiments of Potvin and 
 Fuglevand, 2017.
 
@@ -150,6 +148,16 @@ chart.display()
 This will open a browser window with the produced chart. It should look like this:
 
 <p align="center"><img width="80%" src="docs/src/images/minimal-example-chart.png" /></p>
+
+### Familiar with OpenAI's Gym?
+
+Make sure you have the following installed
+
+```
+pip install gym pygame pymunk
+```
+
+then try out the [example project](https://github.com/iandanforth/pymuscle/tree/master/examples)
 
 # Versioning Plan
 
@@ -229,7 +237,7 @@ or close your terminal and start a new one.
 
 PyMuscle aims to be fast. We use Numpy to get fast vector computation. PyMuscle
 uses only a single process today but may be extended to multi-process in 
-the future and GPU computation through the integration of [PyTorch](https://pytorch.org/).
+the future and to GPUs through the integration of [PyTorch](https://pytorch.org/).
 
 # Limitations
 

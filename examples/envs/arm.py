@@ -5,11 +5,7 @@ import pymunk
 import pymunk.pygame_util
 import numpy as np
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE)
-try:
-    from pymuscle import Muscle
-except ImportError:
-    sys.path.append("..")
-    from pymuscle import PotvinMuscle as Muscle
+from pymuscle import PotvinMuscle as Muscle
 
 
 class PymunkArmEnv(gym.Env):
