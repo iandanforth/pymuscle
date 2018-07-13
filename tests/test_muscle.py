@@ -1,12 +1,6 @@
-import sys
-import os
 import numpy as np
 import pytest
-sys.path.insert(
-    0,
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-)
-from pymuscle import PotvinMuscle as Muscle
+from pymuscle import PotvinFuglevandMuscle as Muscle
 
 
 def test_init():

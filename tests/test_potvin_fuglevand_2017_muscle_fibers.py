@@ -1,12 +1,6 @@
-import sys
-import os
 import numpy as np
 import pytest
-sys.path.insert(
-    0,
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-)
-from pymuscle import Potvin2017MuscleFibers as Fibers
+from pymuscle import PotvinFuglevand2017MuscleFibers as Fibers
 
 
 def test_init():
@@ -60,6 +54,7 @@ def test_step():
     output = f.step(np.full(motor_unit_count, max_input + 40), 1.0)
     output_sum = np.sum(output)
     assert output_sum == pytest.approx(max_output)
+
 
 def test_recovery():
     motor_unit_count = 120

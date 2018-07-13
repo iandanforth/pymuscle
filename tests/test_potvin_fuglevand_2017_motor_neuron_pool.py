@@ -1,12 +1,6 @@
-import sys
-import os
 import numpy as np
 import pytest
-sys.path.insert(
-    0,
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-)
-from pymuscle import Potvin2017MotorNeuronPool as Pool
+from pymuscle import PotvinFuglevand2017MotorNeuronPool as Pool
 
 
 def test_init():

@@ -1,8 +1,8 @@
 import numpy as np
 from typing import Union
 
-from .potvin_2017_muscle_fibers import Potvin2017MuscleFibers as Fibers
-from .potvin_2017_motor_neuron_pool import Potvin2017MotorNeuronPool as Pool
+from .potvin_fuglevand_2017_muscle_fibers import PotvinFuglevand2017MuscleFibers as Fibers
+from .potvin_fuglevand_2017_motor_neuron_pool import PotvinFuglevand2017MotorNeuronPool as Pool
 from .model import Model
 
 
@@ -80,7 +80,7 @@ class Muscle(object):
         return self._fibers.step(motor_pool_output)
 
 
-class PotvinMuscle(Muscle):
+class PotvinFuglevandMuscle(Muscle):
     """
     A thin wrapper around :class:`Muscle <Muscle>` which pre-selects the
     Potvin fiber and motor neuron models.

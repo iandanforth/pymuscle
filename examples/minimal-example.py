@@ -1,4 +1,4 @@
-from pymuscle import PotvinMuscle as Muscle
+from pymuscle import PotvinFuglevandMuscle as Muscle
 from pymuscle.vis import PotvinChart
 
 # Create a Muscle with small number of motor units.

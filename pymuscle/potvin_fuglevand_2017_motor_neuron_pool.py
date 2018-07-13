@@ -4,7 +4,7 @@ from numpy import ndarray
 from .model import Model
 
 
-class Potvin2017MotorNeuronPool(Model):
+class PotvinFuglevand2017MotorNeuronPool(Model):
     """
     Encapsulates the motor neuron portion of the motor unit model.
 

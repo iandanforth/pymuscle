@@ -6,7 +6,7 @@ from copy import copy
 from .model import Model
 
 
-class Potvin2017MuscleFibers(Model):
+class PotvinFuglevand2017MuscleFibers(Model):
     """
     Encapsulates the muscle fibers portions of the motor unit model.
 
