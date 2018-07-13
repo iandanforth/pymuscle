@@ -1,3 +1,5 @@
+### *** Warning: PyMuscle is early stage and under active development. ***
+
 # PyMuscle
 PyMuscle provides a motor unit based model of skeletal muscle. It simulates the
 relationship between excitatory input and motor-unit output as well as fatigue 
@@ -76,8 +78,6 @@ compensate for the fatigue if it wants to maintain a given force or perform
 the same action again and again in the same way.
 
 # Installation
-
-### *** Warning: PyMuscle is early stage and under active development. ***
 
 ## Requirements
 
