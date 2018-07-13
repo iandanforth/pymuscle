@@ -52,7 +52,7 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
 
     Usage::
 
-      from pymuscle import Potvin2017MotorNeuronPool as Pool
+      from pymuscle import PotvinFuglevand2017MotorNeuronPool as Pool
 
       motor_unit_count = 60
       pool = Pool(motor_unit_count)

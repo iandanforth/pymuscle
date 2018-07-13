@@ -34,7 +34,7 @@ class PotvinFuglevand2017MuscleFibers(Model):
 
     Usage::
 
-      from pymuscle import Potvin2017MuscleFibers as Fibers
+      from pymuscle import PotvinFuglevand2017MuscleFibers as Fibers
 
       motor_unit_count = 60
       fibers = Fibers(motor_unit_count)

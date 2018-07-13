@@ -22,8 +22,8 @@ class Muscle(object):
     Usage::
 
         from pymuscle import (Muscle,
-                              Potvin2017MotorNeuronPool as Pool,
-                              Potvin2017MuscleFibers as Fibers)
+                              PotvinFuglevand2017MotorNeuronPool as Pool,
+                              PotvinFuglevand2017MuscleFibers as Fibers)
 
         motor_unit_count = 60
         muscle = Muscle(
