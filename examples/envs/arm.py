@@ -13,7 +13,7 @@ class PymunkArmEnv(gym.Env):
     Single joint arm with opposing muscles.
     """
 
-    def __init__(self):
+    def __init__(self, apply_fatigue=False):
         # Set up our 2D physics simulation
         self._init_sim()
 
@@ -23,7 +23,6 @@ class PymunkArmEnv(gym.Env):
         self.brach, self.tricep = self._add_arm()
 
         # Instantiate the PyMuscles
-        apply_fatigue = False
         brach_motor_unit_count = 100
         self.brach_muscle = Muscle(brach_motor_unit_count, apply_fatigue)
         tricep_motor_unit_count = 100
@@ -84,6 +83,17 @@ class PymunkArmEnv(gym.Env):
 
         self.space.add(lower_arm_body)
         self.space.add(lower_arm_line)
+
+        # Hand
+        hand_width = hand_height = 15
+        start_x = config["lower_arm_length"]
+        start_y = 14
+        self.hand_shape = pymunk.Circle(
+            lower_arm_body,
+            20,
+            (start_x, start_y)
+        )
+        self.space.add(self.hand_shape)
 
         # Pivot (Elbow)
         elbow_body = pymunk.Body(body_type=pymunk.Body.STATIC)
@@ -158,6 +168,9 @@ class PymunkArmEnv(gym.Env):
 
         self.tricep.stiffness = tricep_output
         self.brach.stiffness = brach_output
+
+        hand_location = self.hand_shape.body.local_to_world((170, 0))
+        return hand_location
 
     def render(self, debug=True):
         if debug and (self.draw_options.flags is not 3):
