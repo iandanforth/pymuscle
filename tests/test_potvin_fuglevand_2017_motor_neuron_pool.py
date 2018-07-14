@@ -31,7 +31,8 @@ def test_step():
 
     # No excitation
     output = p.step(np.zeros(motor_unit_count), 1.0)
-    assert output == pytest.approx(0.0)
+    output_sum = sum(output)
+    assert output_sum == pytest.approx(0.0)
 
     # Moderate
     p = Pool(motor_unit_count)
