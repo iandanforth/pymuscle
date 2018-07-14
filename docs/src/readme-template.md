@@ -1,6 +1,8 @@
 ### *** Warning: PyMuscle is early stage and under active development. ***
 
 # PyMuscle
+[![Build Status](https://travis-ci.org/iandanforth/pymuscle.svg?branch=master)](https://travis-ci.org/iandanforth/pymuscle)
+
 PyMuscle provides a motor unit based model of skeletal muscle. It simulates the
 relationship between excitatory input and motor-unit output as well as fatigue 
 over time.
