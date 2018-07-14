@@ -1,3 +1,7 @@
+"""
+Contains base Muscle class and its immediate descendants.
+"""
+
 import numpy as np
 from typing import Union
 

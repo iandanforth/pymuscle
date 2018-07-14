@@ -1,16 +1,16 @@
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from envs import PymunkArmEnv
-
 """
 Arm Curl
 
 The goal here is to keep the arm tracking a moving target smoothly.
 Watch as the effort required slowly increases for all portions of the motion,
-until the muscle is no longer able to support the arm. Here a well tuned
+until the muscle is no longer able to support the arm. Here a hand tuned
 PID controller takes care of managing this effort.
 """
+
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+from envs import PymunkArmEnv
 
 
 def main():

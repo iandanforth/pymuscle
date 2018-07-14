@@ -10,7 +10,8 @@ from pymuscle import PotvinFuglevandMuscle as Muscle
 
 class PymunkArmEnv(gym.Env):
     """
-    Single joint arm with opposing muscles.
+    Single joint arm with opposing muscles physically simulated by Pymunk in
+    a Pygame wrapper.
     """
 
     def __init__(self, apply_fatigue=False):
