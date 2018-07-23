@@ -27,12 +27,12 @@
         </body>
     </worldbody>
     <tendon>
-        <spatial name="brachialis" width="0.05" rgba=".95 .3 .3 1" limited="true" range="0.0 1.7">
+        <spatial name="brachialis" width="0.05" rgba=".95 .3 .3 1" stiffness="1000">
             <site site="brachialis_u_insertion" />
             <geom geom="elbow" />
             <site site="brachialis_l_insertion" />
         </spatial>
-        <spatial name="triceps" width="0.05" rgba=".95 .3 .3 1" limited="true" range="0.0 1.7">
+        <spatial name="triceps" width="0.05" rgba=".95 .3 .3 1" stiffness="500">
             <site site="triceps_u_insertion" />
             <geom geom="elbow" />
             <site site="triceps_l_insertion" />
