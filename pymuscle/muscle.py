@@ -5,8 +5,9 @@ Contains base Muscle class and its immediate descendants.
 import numpy as np
 from typing import Union
 
-from .potvin_fuglevand_2017_muscle_fibers import PotvinFuglevand2017MuscleFibers as Fibers
-from .potvin_fuglevand_2017_motor_neuron_pool import PotvinFuglevand2017MotorNeuronPool as Pool
+from .potvin_fuglevand_2017_muscle_fibers import PotvinFuglevand2017MuscleFibers
+from .potvin_fuglevand_2017_motor_neuron_pool import PotvinFuglevand2017MotorNeuronPool
+from .pymuscle_fibers import PyMuscleFibers
 from .model import Model
 
 
@@ -93,17 +94,54 @@ class PotvinFuglevandMuscle(Muscle):
     def __init__(
         self,
         motor_unit_count: int,
-        apply_fatigue: bool = True,
+        apply_central_fatigue: bool = True,
+        apply_peripheral_fatigue: bool = True,
         pre_calc_firing_rates: bool = False
     ):
-        pool = Pool(
+        pool = PotvinFuglevand2017MotorNeuronPool(
             motor_unit_count,
-            apply_fatigue=apply_fatigue,
+            apply_fatigue=apply_central_fatigue,
             pre_calc_firing_rates=pre_calc_firing_rates
         )
-        fibers = Fibers(
+        fibers = PotvinFuglevand2017MuscleFibers(
             motor_unit_count,
-            apply_fatigue=apply_fatigue
+            apply_fatigue=apply_peripheral_fatigue
+        )
+
+        super().__init__(
+            motor_neuron_pool_model=pool,
+            muscle_fibers_model=fibers
+        )
+
+
+class StandardMuscle(Muscle):
+    """
+    A thin wrapper around :class:`Muscle <Muscle>` which pre-selects the
+    Potvin motor neuron model and the PyMuscle specific fiber model.
+
+    It is expected that this will use a motor neuron model specific to PyMuscle
+    (to be called the PyMuscleMotorNeuronPool) in the future.
+
+    This muscle does *not* include central (motor neuron) fatigue as the
+    equations for recovery are not yet available.
+
+    This muscle does include both peripheral fatigue and recovery.
+    """
+    def __init__(
+        self,
+        motor_unit_count: int,
+        apply_central_fatigue: bool = False,
+        apply_peripheral_fatigue: bool = True,
+        pre_calc_firing_rates: bool = False
+    ):
+        pool = PotvinFuglevand2017MotorNeuronPool(
+            motor_unit_count,
+            apply_fatigue=apply_central_fatigue,
+            pre_calc_firing_rates=pre_calc_firing_rates
+        )
+        fibers = PyMuscleFibers(
+            motor_unit_count,
+            apply_fatigue=apply_peripheral_fatigue
         )
 
         super().__init__(

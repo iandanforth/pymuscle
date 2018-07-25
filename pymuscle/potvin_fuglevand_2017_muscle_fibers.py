@@ -39,7 +39,8 @@ class PotvinFuglevand2017MuscleFibers(Model):
       motor_unit_count = 60
       fibers = Fibers(motor_unit_count)
       motor_neuron_firing_rates = np.rand(motor_unit_count) * 10.0
-      force = fibers.step(motor_neuron_firing_rates)
+      step_size = 0.01
+      force = fibers.step(motor_neuron_firing_rates, step_size)
     """
     def __init__(
         self,
@@ -83,6 +84,7 @@ class PotvinFuglevand2017MuscleFibers(Model):
         # Assing other non-public attributes
         self._contraction_time_change_ratio = contraction_time_change_ratio
         self._apply_fatigue = apply_fatigue
+        self._max_fatigue_rate = max_fatigue_rate
 
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
@@ -104,15 +106,18 @@ class PotvinFuglevand2017MuscleFibers(Model):
         # Instantaneous fatigue rate
         fatigues = (self._nominal_fatigabilities * normalized_forces) * step_size
         self._current_peak_forces -= fatigues
+        # Apply recovery for units producing no force
+        self._apply_recovery(normalized_forces, step_size)
         # Zero out negative values
         self._current_peak_forces[self._current_peak_forces < 0] = 0.0
         self._update_contraction_times()
 
-    def _apply_recovery(self):
+    def _apply_recovery(self, normalized_forces, step_size):
         """
-        Updates twitch forces and contraction times.
+        No-op. Recovery is not implemented in Potvin and Fuglevand 2017. This
+        method exists so that future child classes may override it.
         """
-        raise NotImplementedError
+        pass
 
     def _update_contraction_times(self) -> None:
         """

@@ -250,7 +250,7 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
     def _calc_adaptations(self, firing_rates: ndarray) -> ndarray:
         """
         Calculate the adaptation rates for each neuron based on current
-        activity levels.
+        activity levels. Applies central fatigue.
 
         :param firing_rates: Array of activities for each motor neuron.
         """
