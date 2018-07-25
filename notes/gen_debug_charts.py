@@ -1,12 +1,10 @@
-import sys
-import os
 import numpy as np
 import plotly.graph_objs as go
 from plotly.offline import plot
 
-sys.path.insert(0, os.path.abspath('..'))
-from pymuscle import Potvin2017MuscleFibers as Fibers
-from pymuscle import Potvin2017MotorNeuronPool as Pool
+# from pymuscle import PotvinFuglevand2017MuscleFibers as Fibers
+from pymuscle import PyMuscleFibers as Fibers
+from pymuscle import PotvinFuglevand2017MotorNeuronPool as Pool
 
 motor_unit_count = 120
 motor_unit_indices = np.arange(1, motor_unit_count + 1)
@@ -170,6 +168,18 @@ if True:
         )],
         layout=go.Layout(
             title='Nominal Fatigabilities'
+        )
+    )
+    plot(fig, filename='nominal-fatigabilities.html')
+
+    # Recovery rates
+    fig = go.Figure(
+        data=[go.Scatter(
+            x=motor_unit_indices,
+            y=fibers._recovery_rates
+        )],
+        layout=go.Layout(
+            title='Recovery Rates'
         )
     )
     plot(fig, filename='nominal-fatigabilities.html')

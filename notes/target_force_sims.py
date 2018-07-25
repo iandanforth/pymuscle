@@ -1,21 +1,22 @@
 import sys
 import os
 import numpy as np
-import plotly.graph_objs as go
+# import plotly.graph_objs as go
 import colorlover as cl
 from plotly.offline import plot
 from copy import copy
 
 sys.path.insert(0, os.path.abspath('..'))
-from pymuscle import Potvin2017MuscleFibers as Fibers
-from pymuscle import Potvin2017MotorNeuronPool as Pool
+from pymuscle import PotvinFuglevand2017MuscleFibers as Fibers
+# from pymuscle import PyMuscleFibers as Fibers
+from pymuscle import PotvinFuglevand2017MotorNeuronPool as Pool
 
 motor_unit_count = 120
 motor_unit_indices = np.arange(1, motor_unit_count + 1)
 
 # Motor Neuron Pool
 apply_fatigue = True
-pool = Pool(motor_unit_count, apply_fatigue=apply_fatigue)
+pool = Pool(motor_unit_count, apply_fatigue=True)
 
 # Fibers
 fibers = Fibers(motor_unit_count)  # Disable fatigue below if desired
@@ -51,18 +52,24 @@ all_firing_rates = []
 current_forces = []
 hit_max_excite = False
 excitations = np.full(motor_unit_count, 1.0)
+
 while sim_time < sim_duration:
     total_force = 0.0
     excitations = excitations - (2 * e_inc)  # Start the search again from a slightly lower value
-    # Find the required excitation level for target_force
-    while total_force < target_force:
-        if excitations[0] > max_excitation:
-            if not hit_max_excite:
-                print("Hit max excitation: ", sim_time)
-                hit_max_excite = True
-            break
-        _, _, _, total_force = get_force(excitations, 0) # Don't advance time here
-        excitations += e_inc
+
+    # Give the muscle a break for 40 seconds to see what happens.
+    if 100 < sim_time < 160:
+        excitations = np.zeros(motor_unit_count)
+    else:
+        # Find the required excitation level for target_force
+        while total_force < target_force:
+            if excitations[0] > max_excitation:
+                if not hit_max_excite:
+                    print("Hit max excitation: ", sim_time)
+                    hit_max_excite = True
+                break
+            _, _, _, total_force = get_force(excitations, 0)  # Don't advance time here
+            excitations += e_inc
 
     # We're now at the correct excitation level to generate target_force
     firing_rates, normalized_forces, current_forces, total_force = get_force(excitations, time_inc)
@@ -75,8 +82,8 @@ while sim_time < sim_duration:
     all_forces.append(current_forces)
     all_total_forces.append(total_force / max_force)
     all_excitation_levels.append(excitations[0] / max_excitation)
-    all_capacities.append(copy(fibers._current_twitch_forces) / fibers._peak_twitch_forces)
-    total_capacity = sum(fibers._current_twitch_forces)
+    all_capacities.append(copy(fibers._current_peak_forces) / fibers._peak_twitch_forces)
+    total_capacity = sum(fibers._current_peak_forces)
     all_total_capacities.append(total_capacity / total_peak_capacity)
     all_firing_rates.append(firing_rates)
 
@@ -141,33 +148,33 @@ def get_annotation(
     return annotation
 
 
-if True:
+if False:
     # 2.A
     a_data = []
     # Total Muscle Force
-    total_force_trace = go.Scatter(
+    total_force_trace = dict(
         x=times,
         y=all_total_forces,
         name='Muscle force'
     )
     a_data.append(total_force_trace)
     # Total Excitation
-    excitation_trace = go.Scatter(
+    excitation_trace = dict(
         x=times,
         y=all_excitation_levels,
         name='Excitation'
     )
     a_data.append(excitation_trace)
     # Force Capacity
-    capacity_trace = go.Scatter(
+    capacity_trace = dict(
         x=times,
         y=all_total_capacities,
         name='Force Capacity'
     )
     a_data.append(capacity_trace)
-    fig = go.Figure(
+    fig = dict(
         data=a_data,
-        layout=go.Layout(
+        layout=dict(
             title='Excitation, Force, & Force capacity by Time',
             yaxis=dict(
                 title='Excitation, force, & force capacity (% max.)'
@@ -177,9 +184,9 @@ if True:
             )
         )
     )
-    plot(fig, filename='totals-by-time.html')
+    plot(fig, filename='totals-by-time.html', validate=False)
 
-if True:
+if False:
     # Per Motor Unit Force
     all_array = np.array(all_forces).T
     data = []
@@ -194,7 +201,7 @@ if True:
         119: 170
     }
     for i, t in enumerate(all_array):
-        trace = go.Scatter(
+        trace = dict(
             x=times,
             y=t,
             name=i + 1,
@@ -214,7 +221,7 @@ if True:
             )
             annotations.append(annotation)
 
-    layout = go.Layout(
+    layout = dict(
         title='Motor Unit Forces by Time',
         yaxis=dict(
             title='Motor unit force (relative to MU1 tetanus)'
@@ -225,13 +232,13 @@ if True:
     )
     layout['annotations'] = annotations
 
-    fig = go.Figure(
+    fig = dict(
         data=data,
         layout=layout
     )
-    plot(fig, filename='forces-by-time.html')
+    plot(fig, filename='forces-by-time.html', validate=False)
 
-if True:
+if False:
     # 2.B - Per Motor Unit Firing Rate by Time
     all_array = np.array(all_firing_rates).T
     data = []
@@ -246,7 +253,7 @@ if True:
         119: 110
     }
     for i, t in enumerate(all_array):
-        trace = go.Scatter(
+        trace = dict(
             x=times,
             y=t,
             name=i + 1,
@@ -266,7 +273,7 @@ if True:
             )
             annotations.append(annotation)
 
-    layout = go.Layout(
+    layout = dict(
         title='Motor Unit Firing Rates by Time',
         yaxis=dict(
             title='Firing rate (Hz)'
@@ -277,11 +284,11 @@ if True:
     )
     layout['annotations'] = annotations
 
-    fig = go.Figure(
+    fig = dict(
         data=data,
         layout=layout
     )
-    plot(fig, filename='firing-rates-by-time.html')
+    plot(fig, filename='firing-rates-by-time.html', validate=False)
 
 if True:
     # 2.D - Per Motor Unit Force Capacities by Time
@@ -298,7 +305,7 @@ if True:
         119: 110
     }
     for i, t in enumerate(all_array):
-        trace = go.Scatter(
+        trace = dict(
             x=times,
             y=t,
             name=i + 1,
@@ -318,10 +325,10 @@ if True:
             )
             annotations.append(annotation)
 
-    layout = go.Layout(
+    layout = dict(
         title='Motor Unit Force Capacities by Time',
         yaxis=dict(
-            title='Firing rate (Hz)'
+            title='Fraction of Peak Capacities'
         ),
         xaxis=dict(
             title='Time (s)'
@@ -329,8 +336,8 @@ if True:
     )
     layout['annotations'] = annotations
 
-    fig = go.Figure(
+    fig = dict(
         data=data,
         layout=layout
     )
-    plot(fig, filename='force-capacities-by-time.html')
+    plot(fig, filename='force-capacities-by-time.html', validate=False)
