@@ -257,10 +257,14 @@ Potvin and Fuglevand 2017 explicitly models fatigue but *not* recovery. We
 eagerly await the updated model from Potvin which will included a model of 
 recovery.
 
+Until then the `StandardMuscle` class, which builds on the Potvin and Fuglevand 
+base classes, implements peripheral (muscle fiber) recovery as this is a 
+relatively simple process but disables central (motor unit fatigue). 
+
 ## Proprioception
 
 This library does not directly provide any feedback signals for control. The
-example project shows how to integrate PyMuscle with a physics simulation to
+example projects show how to integrate PyMuscle with a physics simulation to
 get simulated output forces and stretch and strain values derived from the
 state of the simulated muscle body. (In the example this is a damped spring
 but a Hill-type, or more complex model could also be used.)
