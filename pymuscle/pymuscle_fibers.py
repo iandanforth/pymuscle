@@ -60,16 +60,45 @@ class PyMuscleFibers(PotvinFuglevand2017MuscleFibers):
             self._peak_twitch_forces
         )
 
+    def _update_fatigue(
+        self,
+        normalized_forces: ndarray,
+        step_size: float
+    ) -> None:
+        """
+        Updates current twitch forces and contraction times. This overrides
+        the parent method to add in recovery calculations.
+
+        :param normalized_forces:
+            Array of scaled forces. Used to weight how much fatigue will be
+            generated in this step.
+        :param step_size: How far time has advanced in this step.
+        """
+        fatigues = (self._nominal_fatigabilities * normalized_forces) * step_size
+        self._current_peak_forces -= fatigues
+
+        # Apply recovery for units producing no force
+        self._apply_recovery(normalized_forces, step_size)
+
+        # Zero out negative values
+        self._current_peak_forces[self._current_peak_forces < 0] = 0.0
+
+        # Clip max values
+        over = self._current_peak_forces > self._peak_twitch_forces
+        self._current_peak_forces[over] = self._peak_twitch_forces[over]
+
+        # Apply fatigue to contraction times
+        self._update_contraction_times()
+
     def _apply_recovery(
         self,
         normalized_forces: ndarray,
-        step_size: float,
-        debug: bool = False,
+        step_size: float
     ) -> None:
         """
         Apply recovery to motor units not producing force in this step.
 
-        See parent's implementation of _update_fatigue() for context.
+        TODO - Finalize the strategy used below
         """
         recovering = normalized_forces <= 0
 
@@ -91,12 +120,4 @@ class PyMuscleFibers(PotvinFuglevand2017MuscleFibers):
         recovery_ratio = (peak - current) / peak
         recovery = (self._recovery_rates[recovering] * recovery_ratio) * step_size
 
-        if debug:
-            print(normalized_forces)
-            print(recovering)
-            print(recovery)
-
         self._current_peak_forces[recovering] += recovery
-        # Can't go above peak force
-        over = self._current_peak_forces > self._peak_twitch_forces
-        self._current_peak_forces[over] = self._peak_twitch_forces[over]

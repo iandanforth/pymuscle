@@ -37,7 +37,7 @@ def test_step():
     # Moderate
     p = Pool(motor_unit_count)
     moderate_input = 40.0
-    moderate_output = 3491.4571777
+    moderate_output = 3503.58881
     output = p.step(np.full(motor_unit_count, moderate_input), 1.0)
     output_sum = np.sum(output)
     assert output_sum == pytest.approx(moderate_output)
@@ -45,7 +45,7 @@ def test_step():
     # Max
     p = Pool(motor_unit_count)
     max_input = 67.0
-    max_output = 3894.9753008
+    max_output = 3915.06787
     output = p.step(np.full(motor_unit_count, max_input), 1.0)
     output_sum = np.sum(output)
     assert output_sum == pytest.approx(max_output)
@@ -94,7 +94,7 @@ def test_fatigue_values():
     assert adapted_output_sum != pytest.approx(first_output_sum)
 
     # To this value
-    expected_adapted_output = 3737.1571266
+    expected_adapted_output = 3749.91061
     assert adapted_output_sum == pytest.approx(expected_adapted_output)
 
 

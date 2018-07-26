@@ -7,8 +7,8 @@ from plotly.offline import plot
 from copy import copy
 
 sys.path.insert(0, os.path.abspath('..'))
-from pymuscle import PotvinFuglevand2017MuscleFibers as Fibers
-# from pymuscle import PyMuscleFibers as Fibers
+# from pymuscle import PotvinFuglevand2017MuscleFibers as Fibers
+from pymuscle import PyMuscleFibers as Fibers
 from pymuscle import PotvinFuglevand2017MotorNeuronPool as Pool
 
 motor_unit_count = 120
@@ -16,7 +16,7 @@ motor_unit_indices = np.arange(1, motor_unit_count + 1)
 
 # Motor Neuron Pool
 apply_fatigue = True
-pool = Pool(motor_unit_count, apply_fatigue=True)
+pool = Pool(motor_unit_count, apply_fatigue=False)
 
 # Fibers
 fibers = Fibers(motor_unit_count)  # Disable fatigue below if desired
@@ -38,7 +38,7 @@ target_percent = 100
 target_force = max_force * (target_percent / 100)
 e_inc = 0.01
 sim_time = 0.0
-sim_duration = 200.0
+sim_duration = 800.0
 time_inc = 0.1
 force_capacities = fibers._peak_twitch_forces
 total_peak_capacity = sum(force_capacities)
@@ -58,7 +58,7 @@ while sim_time < sim_duration:
     excitations = excitations - (2 * e_inc)  # Start the search again from a slightly lower value
 
     # Give the muscle a break for 40 seconds to see what happens.
-    if 100 < sim_time < 160:
+    if sim_time > 100:
         excitations = np.zeros(motor_unit_count)
     else:
         # Find the required excitation level for target_force

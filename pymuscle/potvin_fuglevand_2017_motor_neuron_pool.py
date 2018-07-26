@@ -161,10 +161,12 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
 
         """
         firing_rates = self._calc_firing_rates(excitations)
-        self._update_recruitment_durations(firing_rates, step_size)
         adaptations = self._calc_adaptations(firing_rates)
-
         adapted_firing_rates = firing_rates - adaptations
+
+        # Apply fatigue as a last step
+        self._update_recruitment_durations(firing_rates, step_size)
+
         return adapted_firing_rates
 
     def _calc_firing_rates(self, excitations: ndarray) -> ndarray:

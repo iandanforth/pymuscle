@@ -30,7 +30,7 @@ def test_step():
     # Moderate
     m = Muscle(motor_unit_count)
     moderate_input = 40.0
-    moderate_output = 1303.0260266
+    moderate_output = 1311.86896
     output = m.step(np.full(motor_unit_count, moderate_input), 1.0)
     assert output == pytest.approx(moderate_output)
 
@@ -42,7 +42,7 @@ def test_step():
     # Max
     m = Muscle(motor_unit_count)
     max_input = 67.0
-    max_output = 2187.74479
+    max_output = 2215.98114
     output = m.step(np.full(motor_unit_count, 67.0), 1.0)
     assert output == pytest.approx(max_output)
 

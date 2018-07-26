@@ -54,10 +54,3 @@ def test_step():
     output = f.step(np.full(motor_unit_count, max_input + 40), 1.0)
     output_sum = np.sum(output)
     assert output_sum == pytest.approx(max_output)
-
-
-def test_recovery():
-    motor_unit_count = 120
-    f = Fibers(motor_unit_count)
-    with pytest.raises(NotImplementedError):
-        f._apply_recovery()

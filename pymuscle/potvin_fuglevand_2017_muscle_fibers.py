@@ -106,18 +106,10 @@ class PotvinFuglevand2017MuscleFibers(Model):
         # Instantaneous fatigue rate
         fatigues = (self._nominal_fatigabilities * normalized_forces) * step_size
         self._current_peak_forces -= fatigues
-        # Apply recovery for units producing no force
-        self._apply_recovery(normalized_forces, step_size)
+
         # Zero out negative values
         self._current_peak_forces[self._current_peak_forces < 0] = 0.0
         self._update_contraction_times()
-
-    def _apply_recovery(self, normalized_forces, step_size):
-        """
-        No-op. Recovery is not implemented in Potvin and Fuglevand 2017. This
-        method exists so that future child classes may override it.
-        """
-        pass
 
     def _update_contraction_times(self) -> None:
         """
@@ -277,12 +269,12 @@ class PotvinFuglevand2017MuscleFibers(Model):
         normalized_firing_rates = self._normalize_firing_rates(firing_rates)
         normalized_forces = self._calc_normalized_forces(normalized_firing_rates)
         current_forces = self._calc_current_forces(normalized_forces)
+        total_force = np.sum(current_forces)
 
         # Apply fatigue as last step
         if self._apply_fatigue:
             self._update_fatigue(normalized_forces, step_size)
 
-        total_force = np.sum(current_forces)
         return total_force
 
     def step(
