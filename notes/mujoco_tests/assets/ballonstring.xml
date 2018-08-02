@@ -1,0 +1,43 @@
+<mujoco model="arm">
+    <compiler angle="degree" coordinate="local" inertiafromgeom="true"/>
+    <default>
+        <geom conaffinity="1" condim="1" contype="1" margin="0.001" material="geom" rgba="0.8 0.6 .4 1" solimp=".8 .8 .01" solref=".02 1"/>
+        <motor ctrllimited="true" ctrlrange="-.4 .4"/>
+    </default>
+    <option integrator="RK4" timestep="0.002"/>
+    <visual>
+        <map znear="0.02"/>
+    </visual>
+    <worldbody>
+        <light cutoff="100" diffuse="1 1 1" dir="-0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1"/>
+        <geom conaffinity="1" condim="3" material="MatPlane" name="floor" pos="0 0 0" rgba="0.8 0.9 0.8 1" size="20 20 .125" type="plane"/>
+        <body name="block_body" pos="0.0 0.0 3.0">
+            <geom name="block_geom" size="0.2 0.2 0.2" type="box"/>
+            <site name="box_site" pos="0.0 0.0 -0.2" size="0.05"/>
+            <body name="ball" pos="0.3 0.0 -2.0">
+                <joint name="ball_joint" pos="0.0 0.0 -0.2" type="ball" damping="2.0"/>
+                <joint type="slide" axis="0 0 1" damping="2.0"/>
+                <joint type="slide" axis="0 1 0" damping="2.0"/>
+                <joint type="slide" axis="1 0 0" damping="2.0"/>
+                <geom pos="0.0 0.0 0.0" size="0.2" type="sphere"/>
+                <site name="ball_site" pos="0.0 0.0 0.2" size="0.05" />
+            </body>
+        </body>
+    </worldbody>
+    <tendon>
+        <spatial name="string" width="0.02" rgba=".95 .3 .3 1" limited="true" range="0 2.0" stiffness="1000.0" damping="2.0">
+            <site site="box_site" />
+            <site site="ball_site" />
+        </spatial>
+    </tendon>
+    <actuator>
+        <general name="string_actuator" tendon="string" ctrllimited="true"  gainprm="150" ctrlrange="-50 50"/>
+    </actuator>
+    <asset>
+        <texture builtin="gradient" height="100" rgb1=".4 .5 .6" rgb2="0 0 0" type="skybox" width="100"/>
+        <texture builtin="flat" height="1278" mark="cross" markrgb="1 1 1" name="texgeom" random="0.01" rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" type="cube" width="127"/>
+        <texture builtin="checker" height="100" name="texplane" rgb1="0 0 0" rgb2="0.8 0.8 0.8" type="2d" width="100"/>
+        <material name="MatPlane" reflectance="0.5" shininess="1" specular="1" texrepeat="60 60" texture="texplane"/>
+        <material name="geom" texture="texgeom" texuniform="true"/>
+    </asset>
+</mujoco>

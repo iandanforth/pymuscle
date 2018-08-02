@@ -1,0 +1,73 @@
+<!-- ======================================================
+	This file is part of MuJoCo.     
+	Copyright 2009-2016 Roboti LLC.
+	
+	Model 		:: Beam Balance
+		
+	Mujoco		:: Advanced physics simulation engine
+		Source		: www.roboti.us
+		Version		: 1.31
+		Released 	: 23Apr16
+		
+	Author		:: Vikash Kumar
+		Contacts 	: kumar@roboti.us
+		Last edits 	: 30Apr'16, 30Nov'15, 10Oct'15
+====================================================== -->
+<mujoco model="beamBalance (v1.31)">
+	<compiler 	inertiafromgeom="true"
+				angle="radian"/>
+			
+	<option	timestep="0.001"
+			iterations="20">
+	</option>
+	
+	<default>
+		<geom  rgba="0.45 0.6 0.6 1"/>
+		<site type="sphere" size="0.02"/>
+	</default>
+
+
+	<worldbody>
+		<camera name="track" mode="trackcom" pos="0 -3 1" xyaxes="1 0 0 0 0 1"/>
+	
+		<light directional="true" cutoff="4" exponent="20" diffuse="1 1 1" specular="0 0 0" pos=".9 .3 2.5" dir="-.9 -.3 -2.5 "/>
+	
+		<!-- ======= Ground ======= -->
+		<geom name="ground" type="plane" pos="0 0 0" size="0.5 1 2" rgba=" .25 .26 .25 1" contype="0" conaffinity="0"/>
+		<site name="rFix" pos="0 -.2 .005"/>
+		<site name="lFix" pos="0 .2 .005"/>
+			
+		<!-- ======= Beam ======= -->
+		<body name="beam" pos="0 0 .5">
+
+
+            <geom type="cylinder" size=".05 .2"/>
+			<geom pos="0 0 -.2" type="capsule" size=".01 .2" euler="1.57 0 0"/>
+			<joint name="pivot" pos="0 0 -.2" axis="1 0 0" limited="true" range="-1.5 1.5" damping=".5"/>
+			<site name="rBeam" pos="0 -.2 -.2"/>
+			<site name="lBeam" pos="0 .2 -.2"/>
+		</body>
+	</worldbody>
+	
+	<tendon>
+		<spatial name="lThread" width="0.02">
+			<site site="lBeam"/>
+			<site site="lFix"/>
+		</spatial>
+		
+		<spatial name="rThread"  width="0.01">
+			<site site="rBeam"/>
+			<site site="rFix"/>
+		</spatial>
+		
+		<fixed name="pivotThread">
+			<joint joint="pivot" coef="1"/>
+		</fixed>
+	</tendon>
+	
+	<actuator>
+		<general name="lPushPull" tendon="lThread" ctrllimited="true"  gainprm="50" ctrlrange="-5 5"/>
+		<general name="rPushPull" tendon="rThread" ctrllimited="true"  gainprm="50" ctrlrange="-5 5"/>
+		<general name="pivotRoll" tendon="pivotThread" ctrllimited="true"  gainprm="50" ctrlrange="-5 5"/>
+	</actuator>
+</mujoco>
