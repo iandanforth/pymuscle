@@ -14,24 +14,27 @@
         <body name="block_body" pos="0.0 0.0 3.0">
             <geom name="block_geom" size="0.2 0.2 0.2" type="box"/>
             <site name="box_site" pos="0.0 0.0 -0.2" size="0.05"/>
-            <body name="ball" pos="0.3 0.0 -2.0">
+            <body name="ball" pos="0.0 0.0 -1.0">
                 <joint name="ball_joint" pos="0.0 0.0 -0.2" type="ball" damping="2.0"/>
                 <joint type="slide" axis="0 0 1" damping="2.0"/>
                 <joint type="slide" axis="0 1 0" damping="2.0"/>
                 <joint type="slide" axis="1 0 0" damping="2.0"/>
-                <geom pos="0.0 0.0 0.0" size="0.2" type="sphere"/>
+                <geom pos="0.0 0.0 0.0" size="0.2" type="sphere" />
                 <site name="ball_site" pos="0.0 0.0 0.2" size="0.05" />
             </body>
         </body>
     </worldbody>
     <tendon>
-        <spatial name="string" width="0.02" rgba=".95 .3 .3 1" limited="true" range="0 2.0" stiffness="1000.0" damping="2.0">
+        <spatial name="string" width="0.02" rgba=".95 .3 .3 1" limited="false" range="0.5 2" stiffness="3700.0" damping="100.0">
             <site site="box_site" />
             <site site="ball_site" />
         </spatial>
     </tendon>
+    <sensor>
+        <force name="ball_sensor" site="ball_site" />
+    </sensor>
     <actuator>
-        <general name="string_actuator" tendon="string" ctrllimited="true"  gainprm="150" ctrlrange="-50 50"/>
+        <general name="string_actuator" tendon="string" ctrllimited="true"  gainprm="2000" ctrlrange="-1 0"/>
     </actuator>
     <asset>
         <texture builtin="gradient" height="100" rgb1=".4 .5 .6" rgb2="0 0 0" type="skybox" width="100"/>
