@@ -27,6 +27,8 @@ Welcome to PyMuscle's documentation!
 .. autoclass:: PotvinFuglevand2017MuscleFibers
     :members:
 
+.. automodule:: pymuscle.hill_type
+
 Indices and tables
 ==================
 

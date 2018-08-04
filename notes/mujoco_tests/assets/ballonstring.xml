@@ -34,7 +34,7 @@
         <force name="ball_sensor" site="ball_site" />
     </sensor>
     <actuator>
-        <general name="string_actuator" tendon="string" ctrllimited="true"  gainprm="2000" ctrlrange="-1 0"/>
+        <general name="string_actuator" tendon="string" ctrllimited="true"  gainprm="2000" ctrlrange="-2 0"/>
     </actuator>
     <asset>
         <texture builtin="gradient" height="100" rgb1=".4 .5 .6" rgb2="0 0 0" type="skybox" width="100"/>

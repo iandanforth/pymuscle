@@ -5,39 +5,29 @@ import os
 import plotly.graph_objs as go
 from plotly.offline import plot
 
+from pymuscle.hill_type import (
+    contractile_element_force_length_curve as ce_length_curve,
+    contractile_element_force_velocity_curve as ce_velocity_curve,
+)
+
+
 from os.path import dirname
 path = dirname(os.path.abspath(__file__)) + "/assets/ballonstring.xml"
 model = load_model_from_path(path)
 sim = MjSim(model)
 viewer = MjViewer(sim)
 
-
-def force_length_curve(
-    rest_length: float,
-    current_length: float,
-    width_factor: float=17.33,
-    peak_force_length: float=1.1
-) -> float:
-    # This normalizes length to the resting length of the tendon
-    # Anderson and others normalize by the length that would generate the
-    # most force.
-    norm_length = current_length / rest_length
-    width_factor = 17.33  # From Anderson
-    peak_force_length = 1.10  # Aubert 1951
-    exponent = width_factor * (-1 * (abs(norm_length - peak_force_length) ** 3))
-    percentage_of_max_force = np.exp(exponent)
-    return percentage_of_max_force
-
-
 t = 0
 total_steps = 15000
 inc = 5.0 / total_steps
+time_step = 0.002
 forces = []
 sensor_forces = []
 lengths = []
 act_forces = []
 initial_stiffness = None
 total_forces = []
+prev_length = None
 for i in range(1, total_steps + 1):
     sim.step()
 
@@ -80,8 +70,18 @@ for i in range(1, total_steps + 1):
     #     sim.data.ctrl[0] = 0.0
 
     if i > 3000:
-        percentage_of_max_force = force_length_curve(rest_length, cur_length)
-        sim.data.ctrl[0] = -percentage_of_max_force
+        length_factor = ce_length_curve(rest_length, cur_length)
+
+        if not prev_length:
+            prev_length = cur_length
+        velocity_factor = ce_velocity_curve(
+            rest_length,
+            cur_length,
+            prev_length,
+            time_step
+        )
+
+        sim.data.ctrl[0] = -(length_factor * velocity_factor)
 
         forces.append(tension)
         norm_length = cur_length / rest_length
@@ -92,6 +92,8 @@ for i in range(1, total_steps + 1):
         sensor_forces.append(sensor_force)
         total_force = act_force + tension
         total_forces.append(total_force)
+
+        prev_length = cur_length
 
     if 6000 < i < 9000:
         sim.model.body_mass[2] = sim.model.body_mass[2] + 0.1
