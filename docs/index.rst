@@ -28,6 +28,7 @@ Welcome to PyMuscle's documentation!
     :members:
 
 .. automodule:: pymuscle.hill_type
+    :members:
 
 Indices and tables
 ==================

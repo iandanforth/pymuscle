@@ -14,6 +14,7 @@ except ImportError as e:
 
 DEFAULT_SIZE = 500
 
+
 class MujocoEnv(gym.Env):
     """Superclass for all MuJoCo environments.
     """
