@@ -116,8 +116,12 @@ class PotvinFuglevandMuscle(Muscle):
 
 class StandardMuscle(Muscle):
     """
-    A thin wrapper around :class:`Muscle <Muscle>` which pre-selects the
+    A wrapper around :class:`Muscle <Muscle>` which pre-selects the
     Potvin motor neuron model and the PyMuscle specific fiber model.
+
+    The API for this class is oriented toward use along side physics sims so
+    you primarily specify the max_force (in newtons) you want the muscle to
+    output as opposed to motor_unit_count as with other classes in this library.
 
     It is expected that this will use a motor neuron model specific to PyMuscle
     (to be called the PyMuscleMotorNeuronPool) in the future.
@@ -125,15 +129,49 @@ class StandardMuscle(Muscle):
     This muscle does *not* include central (motor neuron) fatigue as the
     equations for recovery are not yet available.
 
-    This muscle does include both peripheral fatigue and recovery.
+    This muscle does include both *peripheral* fatigue and recovery.
+
+    :param max_force: Maximum voluntary isometric force this muscle can produce 
+        when fully rested and at maximum excitation. (Newtons)
+        This along with the force_conversion_factor will determine the number 
+        of simulated motor units.
+    :param force_conversion_factor: The ratio of newtons to arbitrary force
+        units. All peak twitch forces are calculated internally to lie in a
+        range of 0 to 100 arbitrary force units. The maximum force these
+        fibers can theoretically produce is the sum of those peak twitch forces.
+        To relate the arbitrary force units to SI units you need to provide
+        a conversion factor. Increasing this value is essentially saying that
+        a given motor unit produces more force than the default value would
+        suggest.
+
+        Performance Note: You may need to increase this number if max_force is
+        large. Leaving it unchanged may result in a large motor_unit_count
+        which is the primary N for performance calculations in this library.
+
+        motor_unit_count ~= max_force / (force_conversion_factor * 17.66)
+
+        e.g. if max_force == 500 then motor_unit_count ~= 1000
     """
     def __init__(
         self,
-        motor_unit_count: int,
+        max_force: float = 60.0,
+        force_conversion_factor: float = 0.028,
         apply_central_fatigue: bool = False,
         apply_peripheral_fatigue: bool = True,
         pre_calc_firing_rates: bool = False
     ):
+
+        # Maximum voluntary isometric force this muscle will be able to produce
+        self.max_force = max_force
+
+        # Ratio of newtons (N) to internal arbitrary force units
+        self.force_conversion_factor = force_conversion_factor
+
+        # TODO Implement correct function here
+        motor_unit_count = int(
+            max_force / (force_conversion_factor * 17.66)
+        )
+
         pool = PotvinFuglevand2017MotorNeuronPool(
             motor_unit_count,
             apply_fatigue=apply_central_fatigue,
@@ -141,6 +179,7 @@ class StandardMuscle(Muscle):
         )
         fibers = PyMuscleFibers(
             motor_unit_count,
+            force_conversion_factor=force_conversion_factor,
             apply_fatigue=apply_peripheral_fatigue
         )
 

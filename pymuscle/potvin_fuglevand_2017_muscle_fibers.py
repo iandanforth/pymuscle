@@ -167,7 +167,8 @@ class PotvinFuglevand2017MuscleFibers(Model):
 
         :param motor_unit_count: The number of motor units in the pool.
         :param max_twitch_amplitude:
-            Largest force a motor unit in this muscle can produce.
+            Largest force a motor unit in this muscle can produce. (Arbitrary
+            units.)
         """
         motor_unit_indices = np.arange(1, motor_unit_count + 1)
         t_log = np.log(max_twitch_amplitude)

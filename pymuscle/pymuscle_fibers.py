@@ -16,6 +16,14 @@ class PyMuscleFibers(PotvinFuglevand2017MuscleFibers):
     those are strict implementations of published work.
 
     :param motor_unit_count: Number of motor units in the muscle
+    :param force_conversion_factor: The ratio of newtons to arbitrary force
+        units. All peak twitch forces are calculated internally to lie in a
+        range of 0 to 100 arbitrary force units. The maximum force these
+        fibers can theoretically produce is the sum of those peak twitch forces.
+        To relate the arbitrary force units to SI units you need to provide
+        a conversion factor. Increasing this value is essentially saying that
+        a given motor unit produces more force than the default value would
+        suggest.
     :param max_twitch_amplitude: Max twitch force within the pool
     :param max_contraction_time:
         [milliseconds] Maximum contraction time for a motor unit
@@ -43,8 +51,16 @@ class PyMuscleFibers(PotvinFuglevand2017MuscleFibers):
       step_size = 0.01
       force = fibers.step(motor_neuron_firing_rates, step_size)
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        *args,
+        force_conversion_factor: float=0.028,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
+
+        # Ratio of newtons (N) to internal arbitrary force units
+        self.force_conversion_factor = force_conversion_factor
 
         # Define recovery rates
         # Averaged from data in Liu et al. 2002, Table 2

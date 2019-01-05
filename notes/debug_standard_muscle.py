@@ -2,18 +2,19 @@ import numpy as np
 import plotly.graph_objs as go
 from plotly.offline import plot
 
-# from pymuscle import PotvinFuglevand2017MuscleFibers as Fibers
-from pymuscle import PyMuscleFibers as Fibers
-from pymuscle import PotvinFuglevand2017MotorNeuronPool as Pool
+from pymuscle.muscle import StandardMuscle
 
-motor_unit_count = 120
+max_force = 200
+force_conversion_factor = 0.09
+muscle = StandardMuscle(max_force, force_conversion_factor)
+motor_unit_count = muscle.motor_unit_count
 motor_unit_indices = np.arange(1, motor_unit_count + 1)
 
 # Motor Neuron Pool
-pool = Pool(motor_unit_count)
+pool = muscle._pool
 
 # Fibers
-fibers = Fibers(motor_unit_count)
+fibers = muscle._fibers
 
 # General simulation params
 time_inc = 1.0

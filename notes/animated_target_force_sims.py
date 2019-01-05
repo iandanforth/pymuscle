@@ -7,8 +7,8 @@ from plotly.offline import plot
 from copy import copy
 
 sys.path.insert(0, os.path.abspath('..'))
-from pymuscle import Potvin2017MuscleFibers as Fibers
-from pymuscle import Potvin2017MotorNeuronPool as Pool
+from pymuscle import PotvinFuglevand2017MuscleFibers as Fibers
+from pymuscle import PotvinFuglevand2017MotorNeuronPool as Pool
 
 motor_unit_count = 120
 motor_unit_indices = np.arange(1, motor_unit_count + 1)
@@ -30,7 +30,7 @@ def get_force(excitations, step_size):
     return firing_rates, normalized_forces, current_forces, total_force
 
 
-# Target Force - 20% MVC
+# Target Force
 max_force = 2216.0
 max_excitation = 67.0
 target_percent = 100
@@ -75,8 +75,8 @@ while sim_time < sim_duration:
     all_forces.append(current_forces)
     all_total_forces.append(total_force / max_force)
     all_excitation_levels.append(excitations[0] / max_excitation)
-    all_capacities.append(copy(fibers._current_twitch_forces) / fibers._peak_twitch_forces)
-    total_capacity = sum(fibers._current_twitch_forces)
+    all_capacities.append(copy(fibers._current_peak_forces) / fibers._peak_twitch_forces)
+    total_capacity = sum(fibers._current_peak_forces)
     all_total_capacities.append(total_capacity / total_peak_capacity)
     all_firing_rates.append(firing_rates)
 
@@ -179,7 +179,8 @@ if False:
     )
     plot(fig, filename='totals-by-time.html')
 
-if True:
+if False:
+    # 2.C
     # Per Motor Unit Force
     all_array = np.array(all_forces).T
     data = []
@@ -272,7 +273,7 @@ if True:
     )
     plot(fig, filename='animated-forces-by-time.html', validate=False)
 
-if False:
+if True:
     # 2.B - Per Motor Unit Firing Rate by Time
     all_array = np.array(all_firing_rates).T
     data = []
@@ -324,7 +325,7 @@ if False:
     )
     plot(fig, filename='firing-rates-by-time.html')
 
-if False:
+if True:
     # 2.D - Per Motor Unit Force Capacities by Time
     all_array = np.array(all_capacities).T
     data = []
