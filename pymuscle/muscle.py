@@ -121,7 +121,8 @@ class StandardMuscle(Muscle):
 
     The API for this class is oriented toward use along side physics sims so
     you primarily specify the max_force (in newtons) you want the muscle to
-    output as opposed to motor_unit_count as with other classes in this library.
+    output as opposed to motor_unit_count as with other classes in this
+    library.
 
     It is expected that this will use a motor neuron model specific to PyMuscle
     (to be called the PyMuscleMotorNeuronPool) in the future.
@@ -141,14 +142,13 @@ class StandardMuscle(Muscle):
         which may be slow. To improve performance (but diverge from biology)
         you can change this force conversion factor.
 
-        motor_unit_count ~= max_force / (force_conversion_factor * 17.66)
-
-        e.g. if max_force == 500 then motor_unit_count ~= 1000
+        Note: It is likely the default value here will change with major
+        versions as better biological data is found.
     """
     def __init__(
         self,
-        max_force: float = 60.0,
-        force_conversion_factor: float = 0.028,
+        max_force: float = 32.0,
+        force_conversion_factor: float = 0.0123,
         apply_central_fatigue: bool = False,
         apply_peripheral_fatigue: bool = True,
         pre_calc_firing_rates: bool = False
@@ -160,9 +160,9 @@ class StandardMuscle(Muscle):
         # Ratio of newtons (N) to internal arbitrary force units
         self.force_conversion_factor = force_conversion_factor
 
-        # TODO Implement correct function here
-        motor_unit_count = int(
-            max_force / (force_conversion_factor * 17.66)
+        motor_unit_count = self.force_to_motor_unit_count(
+            self.max_force,
+            self.force_conversion_factor,
         )
 
         pool = PotvinFuglevand2017MotorNeuronPool(
@@ -180,3 +180,59 @@ class StandardMuscle(Muscle):
             motor_neuron_pool_model=pool,
             muscle_fibers_model=fibers
         )
+
+    @staticmethod
+    def force_to_motor_unit_count(
+        max_force: float,
+        conversion_factor: float
+    ) -> int:
+        # This takes the relationship between force production
+        # and number of motor units from Fuglevand 93 and solves
+        # for motor units given desired force.
+
+        # The reference muscle is the first dorsal interossei
+        # https://en.wikipedia.org/wiki/Dorsal_interossei_of_the_hand
+
+        # The number of motor units for the FDI was estimated by
+        # Feinstein et al. (1955) at 119.
+        # https://www.ncbi.nlm.nih.gov/pubmed/14349537
+        #
+        # Caveats:
+        #  - This estimate was from 1 dissection of an adult male
+        #  - This esimate counted 'large nerve fibers' and then assumed
+        #    40% of them would be afferent.
+
+        # The Fuglevand experiments use 120 motor units.  The peak twitch
+        # forces are calculated in the range of 0-100 arbitrary force units
+        # with each motor unit being assigned a peak twitch force according
+        # to the exponential function outlined in Fuglevand 93.
+        #
+        # The total possible force units this muscle could produce, after
+        # assignment of peak twitch forces, is the sum of those peak twitch
+        # forces or ~2609.03 arbitrary units.
+
+        # The maximum voluntary force (MVC) for the FDI was taken from
+        # Jahanmir-Zezhad et al.
+        # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5450824/
+        # MVC = 32 Newtons (N)
+
+        # Thus if a modeled FDI with 120 motor units produces an MVC of
+        # 2,216 units and a real FDI produces an MVC of 32N we can
+        # relate them as follows
+        #
+        # conversion_factor = 32N / 2609.03 units = 0.01226509469 N/unit
+
+        # See: https://www.desmos.com/calculator/b9xzsaqs1g
+        # m = max_force
+        # c = conversion_factor
+        # u = motor unit count
+        # u = 1 / ln( ((1-m/c) / (e^4.6 - m/c)))^(1/4.6) )
+        r = (max_force / conversion_factor)
+        n2 = 1 - r
+        d2 = np.exp(4.6) - r
+        inner = np.power((n2 / d2), (1 / 4.6))
+        d = np.log(inner)  # This is natural log by default (ln)
+        muf = 1 / d
+        muc = int(np.ceil(muf))
+
+        return muc
