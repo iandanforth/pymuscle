@@ -131,22 +131,15 @@ class StandardMuscle(Muscle):
 
     This muscle does include both *peripheral* fatigue and recovery.
 
-    :param max_force: Maximum voluntary isometric force this muscle can produce 
+    :param max_force: Maximum voluntary isometric force this muscle can produce
         when fully rested and at maximum excitation. (Newtons)
-        This along with the force_conversion_factor will determine the number 
+        This along with the force_conversion_factor will determine the number
         of simulated motor units.
-    :param force_conversion_factor: The ratio of newtons to arbitrary force
-        units. All peak twitch forces are calculated internally to lie in a
-        range of 0 to 100 arbitrary force units. The maximum force these
-        fibers can theoretically produce is the sum of those peak twitch forces.
-        To relate the arbitrary force units to SI units you need to provide
-        a conversion factor. Increasing this value is essentially saying that
-        a given motor unit produces more force than the default value would
-        suggest.
-
-        Performance Note: You may need to increase this number if max_force is
-        large. Leaving it unchanged may result in a large motor_unit_count
-        which is the primary N for performance calculations in this library.
+    :param force_conversion_factor: This library uses biological defaults to
+        convert the desired max_force into a number of motor units which
+        make up a muscle. This can result in a large number of motor units
+        which may be slow. To improve performance (but diverge from biology)
+        you can change this force conversion factor.
 
         motor_unit_count ~= max_force / (force_conversion_factor * 17.66)
 
