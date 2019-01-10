@@ -104,6 +104,13 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
 
+        # Calculate the excitation required to bring the pool to
+        # maximum firing.
+        m_e = self._max_recruitment_threshold \
+            + (max_firing_rate_last_unit - self._min_firing_rate) \
+            / self._firing_gain
+        self.max_excitation = m_e
+
         # Pre-calculate firing rates for all motor neurons across a range of
         # possible excitation levels.
         self._firing_rates_by_excitation = None

@@ -12,6 +12,9 @@ def test_init():
     p = Pool(motor_unit_count)
     assert p.motor_unit_count == motor_unit_count
 
+    # Check calculated max excitation
+    assert p.max_excitation == 67.0
+
 
 def test_step():
     motor_unit_count = 120

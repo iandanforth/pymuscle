@@ -55,6 +55,10 @@ class Muscle(object):
         return self._pool.motor_unit_count
 
     @property
+    def max_excitation(self):
+        return self._pool.max_excitation
+
+    @property
     def current_forces(self):
         return self._fibers.current_forces
 
@@ -236,3 +240,23 @@ class StandardMuscle(Muscle):
         muc = int(np.ceil(muf))
 
         return muc
+
+    def step(
+        self,
+        motor_pool_input: Union[float, np.ndarray],
+        step_size: float
+    ) -> float:
+        """
+        Advances the muscle model one step.
+
+        :param motor_pool_input:
+            Either a single value or an array of values representing the
+            excitatory input to the motor neuron pool for this muscle.
+            Range is 0 - 1.0.
+        :param step_size:
+            How far to advance the simulation in time for this step.
+        """
+
+        # Rescale the input to the underlying rage for the motor pool
+        motor_pool_input *= self.max_excitation
+        return super().step(motor_pool_input, step_size)

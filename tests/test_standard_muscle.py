@@ -6,6 +6,8 @@ from pymuscle import StandardMuscle as Muscle
 def test_init():
     max_force = 32.0
     m = Muscle(max_force)
+
+    # Check calculated number of motor units
     assert m.motor_unit_count == 120
 
 
@@ -25,8 +27,8 @@ def test_step():
 
     # Moderate
     m = Muscle(max_force)
-    moderate_input = 40.0
-    moderate_output = 1311.86896
+    moderate_input = 0.5
+    moderate_output = 1020.0358
     output = m.step(np.full(m.motor_unit_count, moderate_input), 1.0)
     assert output == pytest.approx(moderate_output)
 
@@ -37,9 +39,9 @@ def test_step():
 
     # Max
     m = Muscle(max_force)
-    max_input = 67.0
+    max_input = 1.0
     max_output = 2215.98114
-    output = m.step(np.full(m.motor_unit_count, 67.0), 1.0)
+    output = m.step(np.full(m.motor_unit_count, max_input), 1.0)
     assert output == pytest.approx(max_output)
 
     # Above
