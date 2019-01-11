@@ -164,6 +164,9 @@ class StandardMuscle(Muscle):
         # Ratio of newtons (N) to internal arbitrary force units
         self.force_conversion_factor = force_conversion_factor
 
+        # Max output in arbitrary units
+        self.max_output = max_force / force_conversion_factor
+
         motor_unit_count = self.force_to_motor_unit_count(
             self.max_force,
             self.force_conversion_factor,
@@ -240,6 +243,19 @@ class StandardMuscle(Muscle):
         muc = int(np.ceil(muf))
 
         return muc
+
+    def get_central_fatigue(self):
+        raise NotImplementedError
+
+    def get_peripheral_fatigue(self) -> float:
+        """
+        Returns fatigue level in the range 0.0 to 1.0 where:
+
+        1.0 - Completely fatigued
+        0.0 - Completely rested
+        """
+        fatigue = 1 - sum(self._fibers.current_peak_forces) / self.max_output
+        return fatigue
 
     def step(
         self,

@@ -10,6 +10,18 @@ def test_init():
     # Check calculated number of motor units
     assert m.motor_unit_count == 120
 
+    # Check calculated max_output
+    max_output = 2601.6260
+    assert m.max_output  == pytest.approx(max_output)
+
+    max_force = 90.0
+    m = Muscle(max_force)
+
+    # Check calculated number of motor units
+    assert m.motor_unit_count == 340
+    max_output = 7317.07317
+    assert m.max_output  == pytest.approx(max_output)
+
 
 def test_step():
     max_force = 32.0

@@ -90,6 +90,10 @@ class PotvinFuglevand2017MuscleFibers(Model):
         self.motor_unit_count = motor_unit_count
         self.current_forces = None
 
+    @property
+    def current_peak_forces(self):
+        return self._current_peak_forces
+
     def _update_fatigue(
         self,
         normalized_forces: ndarray,
