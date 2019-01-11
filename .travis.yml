@@ -1,12 +1,13 @@
 language: python
+sudo: required
+dist: xenial
 python:
   - "3.6"
-  - "3.7-dev"  # 3.7 development branch
+  - "3.7"
 # command to install dependencies
 install:
-  - pip install pipenv
-  - pipenv install
-  - pipenv install '-e .'
+  - pip install .
+  - pip install -r requirements-dev.txt
 # command to run tests
 script:
   - pytest # or py.test for Python versions 3.5 and below

@@ -1,0 +1,11 @@
+# Why only a requirements-dev.txt?
+# https://caremad.io/posts/2013/07/setup-vs-requirement/
+# Standard install: 
+# 	`pip install pymuscle` 		# From PyPi
+# 	`pip install .`				# Locally
+#	`python setup.py install`	# Same as above
+pytest >= 3.6
+pylint
+coverage
+pytest-cov
+sphinx-rtd-theme

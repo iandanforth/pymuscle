@@ -1,5 +1,4 @@
 import numpy as np
-import plotly.graph_objs as go
 import colorlover as cl
 from numpy import ndarray
 from plotly.offline import plot

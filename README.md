@@ -206,35 +206,10 @@ Clone this repository
 ```
 git clone git@github.com:iandanforth/pymuscle.git
 cd pymuscle
+pip install -r requirements-dev.txt
+python setup.py develop
+pytest
 ```
-
-Install [pipenv](https://docs.pipenv.org/). (The modern combination of pip and 
-virtual environments.)
-
-```
-pip install pipenv
-```
-
-If this throws a permissions error you will need to to run this with 'sudo'
-
-```
-sudo pip install pipenv
-```
-
-Install dependencies and start a clean python environment
-
-```
-pipenv install
-pipenv shell
-```
-
-To exit this python environment
-
-```
-exit
-```
-
-or close your terminal and start a new one.
 
 # Performance
 
