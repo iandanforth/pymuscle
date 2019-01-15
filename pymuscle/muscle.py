@@ -123,13 +123,12 @@ class StandardMuscle(Muscle):
     A wrapper around :class:`Muscle <Muscle>` which pre-selects the
     Potvin motor neuron model and the PyMuscle specific fiber model.
 
-    The API for this class is oriented toward use along side physics sims so
-    you primarily specify the max_force (in newtons) you want the muscle to
-    output as opposed to motor_unit_count as with other classes in this
-    library.
+    In addition this class implements an API (through the primary step()
+    method) where inputs to and outputs from the muscle are in the range
+    0.0 to 1.0.
 
-    It is expected that this will use a motor neuron model specific to PyMuscle
-    (to be called the PyMuscleMotorNeuronPool) in the future.
+    The API for this class is oriented toward use along side physics
+    simulations.
 
     This muscle does *not* include central (motor neuron) fatigue as the
     equations for recovery are not yet available.
@@ -165,7 +164,7 @@ class StandardMuscle(Muscle):
         self.force_conversion_factor = force_conversion_factor
 
         # Max output in arbitrary units
-        self.max_output = max_force / force_conversion_factor
+        self.max_arb_output = max_force / force_conversion_factor
 
         motor_unit_count = self.force_to_motor_unit_count(
             self.max_force,
@@ -254,7 +253,7 @@ class StandardMuscle(Muscle):
         1.0 - Completely fatigued
         0.0 - Completely rested
         """
-        fatigue = 1 - sum(self._fibers.current_peak_forces) / self.max_output
+        fatigue = 1 - sum(self._fibers.current_peak_forces) / self.max_arb_output
         return fatigue
 
     def step(
@@ -268,11 +267,14 @@ class StandardMuscle(Muscle):
         :param motor_pool_input:
             Either a single value or an array of values representing the
             excitatory input to the motor neuron pool for this muscle.
-            Range is 0 - 1.0.
+            Range is 0.0 - 1.0.
         :param step_size:
             How far to advance the simulation in time for this step.
         """
 
-        # Rescale the input to the underlying rage for the motor pool
+        # Rescale the input to the underlying range for the motor pool
         motor_pool_input *= self.max_excitation
-        return super().step(motor_pool_input, step_size)
+        arb_output = super().step(motor_pool_input, step_size)
+        # Rescale the output such that it is in the range 0.0 - 1.0
+        scaled_output = arb_output / self.max_arb_output
+        return scaled_output
