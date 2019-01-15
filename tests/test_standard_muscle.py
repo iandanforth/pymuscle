@@ -12,7 +12,7 @@ def test_init():
 
     # Check calculated max_output
     max_output = 2601.6260
-    assert m.max_output  == pytest.approx(max_output)
+    assert m.max_arb_output == pytest.approx(max_output)
 
     max_force = 90.0
     m = Muscle(max_force)
@@ -20,7 +20,7 @@ def test_init():
     # Check calculated number of motor units
     assert m.motor_unit_count == 340
     max_output = 7317.07317
-    assert m.max_output  == pytest.approx(max_output)
+    assert m.max_arb_output == pytest.approx(max_output)
 
 
 def test_step():
@@ -40,7 +40,7 @@ def test_step():
     # Moderate
     m = Muscle(max_force)
     moderate_input = 0.5
-    moderate_output = 1020.0358
+    moderate_output = 0.392076
     output = m.step(np.full(m.motor_unit_count, moderate_input), 1.0)
     assert output == pytest.approx(moderate_output)
 
@@ -52,7 +52,7 @@ def test_step():
     # Max
     m = Muscle(max_force)
     max_input = 1.0
-    max_output = 2215.98114
+    max_output = 0.851767
     output = m.step(np.full(m.motor_unit_count, max_input), 1.0)
     assert output == pytest.approx(max_output)
 
