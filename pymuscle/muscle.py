@@ -64,7 +64,7 @@ class Muscle(object):
 
     def step(
         self,
-        motor_pool_input: Union[float, np.ndarray],
+        motor_pool_input: Union[int, float, np.ndarray],
         step_size: float
     ) -> float:
         """
@@ -85,8 +85,11 @@ class Muscle(object):
                 motor_pool_input
             )
 
-        motor_pool_output = self._pool.step(motor_pool_input, step_size)
-        return self._fibers.step(motor_pool_output)
+        # Ensure we're really passing an ndarray to _pool.step()
+        input_as_array = np.array(motor_pool_input)
+
+        motor_pool_output = self._pool.step(input_as_array, step_size)
+        return self._fibers.step(motor_pool_output, step_size)
 
 
 class PotvinFuglevandMuscle(Muscle):
@@ -258,7 +261,7 @@ class StandardMuscle(Muscle):
 
     def step(
         self,
-        motor_pool_input: Union[float, np.ndarray],
+        motor_pool_input: Union[int, float, np.ndarray],
         step_size: float
     ) -> float:
         """

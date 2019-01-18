@@ -60,3 +60,22 @@ def test_step():
     m = Muscle(max_force)
     output = m.step(np.full(m.motor_unit_count, max_input + 40), 1.0)
     assert output == pytest.approx(max_output)
+
+
+def test_fatigue():
+    # With fatigue off the return should always be the same
+    max_force = 32.0
+    m = Muscle(max_force, apply_peripheral_fatigue=False)
+    moderate_input = 0.5
+    moderate_output = 0.392076
+    for i in range(100):
+        output = m.step(moderate_input, 1.0)
+        assert output == pytest.approx(moderate_output)
+
+    # Fatigue on you should see decreasing output over time
+    m = Muscle(max_force, apply_peripheral_fatigue=True)
+    fatigued_output = 0.292348
+    for i in range(100):
+        output = m.step(moderate_input, 1.0)
+
+    assert output == pytest.approx(fatigued_output)

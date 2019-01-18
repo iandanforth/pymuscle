@@ -88,7 +88,7 @@ class PotvinFuglevand2017MuscleFibers(Model):
 
         # Assign public attributes
         self.motor_unit_count = motor_unit_count
-        self.current_forces = None
+        self.current_forces = np.zeros(motor_unit_count)
 
     @property
     def current_peak_forces(self):
@@ -263,7 +263,7 @@ class PotvinFuglevand2017MuscleFibers(Model):
         self,
         firing_rates: ndarray,
         step_size: float
-    ) -> ndarray:
+    ) -> float:
         """
         Calculates the total instantaneous force produced by all fibers for
         the given instantaneous firing rates.

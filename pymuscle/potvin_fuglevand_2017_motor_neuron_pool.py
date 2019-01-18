@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import ndarray
+from typing import Dict, Any
 
 from .model import Model
 
@@ -113,7 +114,7 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
 
         # Pre-calculate firing rates for all motor neurons across a range of
         # possible excitation levels.
-        self._firing_rates_by_excitation = None
+        self._firing_rates_by_excitation: Dict[float, Any] = {}
         if pre_calc_firing_rates:
             self._build_firing_rates_cache(pre_calc_max, pre_calc_resolution)
 
@@ -131,7 +132,6 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
             The step size between values during calculations.
         """
 
-        self._firing_rates_by_excitation = {}
         # TODO: This is a hack. Maybe memoize vs pre-calculate?
         # Maybe https://docs.python.org/3/library/functools.html#functools.lru_cache
         resolution_places = len(str(pre_calc_resolution).split(".")[1])
