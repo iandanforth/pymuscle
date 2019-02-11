@@ -9,8 +9,7 @@ PID controller takes care of managing this effort.
 
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-from envs import PymunkArmEnv
+from pymuscle.envs import PymunkArmEnv
 
 
 def main():

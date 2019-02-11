@@ -1,9 +1,9 @@
-from pymuscle import PotvinFuglevandMuscle as Muscle
+from pymuscle import StandardMuscle as Muscle
 from pymuscle.vis import PotvinChart
 
-# Create a Muscle with small number of motor units.
-motor_unit_count = 120
-muscle = Muscle(motor_unit_count)
+muscle = Muscle(
+    apply_central_fatigue=True,
+)
 
 # Set up the simulation parameters
 sim_duration = 60  # seconds
@@ -12,7 +12,7 @@ step_size = 1 / frames_per_second
 total_steps = int(sim_duration / step_size)
 
 # Use a constant level of excitation to more easily observe fatigue
-excitation = 40.0
+excitation = 0.7  # Range is 0.0 to 1.0
 
 total_outputs = []
 outputs_by_unit = []

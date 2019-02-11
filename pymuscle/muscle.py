@@ -253,8 +253,8 @@ class StandardMuscle(Muscle):
         """
         Returns fatigue level in the range 0.0 to 1.0 where:
 
-        1.0 - Completely fatigued
         0.0 - Completely rested
+        1.0 - Completely fatigued
         """
         fatigue = 1 - sum(self._fibers.current_peak_forces) / self.max_arb_output
         return fatigue
