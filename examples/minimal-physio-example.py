@@ -6,7 +6,7 @@ motor_unit_count = 120
 muscle = Muscle(motor_unit_count)
 
 # Set up the simulation parameters
-sim_duration = 60  # seconds
+sim_duration = 200  # seconds
 frames_per_second = 50
 step_size = 1 / frames_per_second
 total_steps = int(sim_duration / step_size)
