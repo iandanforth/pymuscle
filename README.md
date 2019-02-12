@@ -1,5 +1,3 @@
-### *** Warning: PyMuscle is early stage and under active development. ***
-
 # PyMuscle
 [![Build Status](https://travis-ci.org/iandanforth/pymuscle.svg?branch=master)](https://travis-ci.org/iandanforth/pymuscle)
 
