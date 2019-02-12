@@ -164,7 +164,7 @@ then try out the [example project](https://github.com/iandanforth/pymuscle/tree/
 
 # Versioning Plan
 
-PyMuscle is in a pre-alpha state. Expect regular breaking changes.
+PyMuscle is in an alpha state. Expect regular breaking changes.
 
 We expect to stabilize the API for 1.0 and introduce breaking changes only
 during major releases.
@@ -213,9 +213,9 @@ pytest
 
 # Performance
 
-PyMuscle aims to be fast. We use Numpy to get fast vector computation. PyMuscle
-uses only a single process today but may be extended to multi-process in 
-the future and to GPUs through the integration of [PyTorch](https://pytorch.org/).
+PyMuscle aims to be fast. We use Numpy to get fast vector computation. If you
+find that some part of the library is not fast enough for your use case please
+[open a ticket](https://github.com/iandanforth/pymuscle/issues) and let us know.
 
 # Limitations
 
@@ -238,11 +238,10 @@ relatively simple process but disables central (motor unit fatigue).
 
 ## Proprioception
 
-This library does not directly provide any feedback signals for control. The
+Instances of `StandardMuscle` implement a `get_peripheral_fatigue()` method
+to allow users to track fatigue state of each muscle. Other than that this
+library does not directly provide any feedback signals for control. The
 example projects show how to integrate PyMuscle with a physics simulation to
 get simulated output forces and stretch and strain values derived from the
 state of the simulated muscle body. (In the example this is a damped spring
 but a Hill-type, or more complex model could also be used.)
-
-Fatigue could be used as a feedback signal but this will need to be calculated
-from the states of the motor units.
