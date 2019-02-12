@@ -5,7 +5,7 @@ import pymunk
 import pymunk.pygame_util
 import numpy as np
 from pygame.locals import (QUIT, KEYDOWN, K_ESCAPE)
-from pymuscle import PotvinFuglevandMuscle as Muscle
+from pymuscle import StandardMuscle as Muscle
 
 
 class PymunkArmEnv(gym.Env):
@@ -24,10 +24,12 @@ class PymunkArmEnv(gym.Env):
         self.brach, self.tricep = self._add_arm()
 
         # Instantiate the PyMuscles
-        brach_motor_unit_count = 100
-        self.brach_muscle = Muscle(brach_motor_unit_count, apply_fatigue)
-        tricep_motor_unit_count = 100
-        self.tricep_muscle = Muscle(tricep_motor_unit_count, apply_fatigue)
+        self.brach_muscle = Muscle(
+            apply_peripheral_fatigue=apply_fatigue
+        )
+        self.tricep_muscle = Muscle(
+            apply_peripheral_fatigue=False  # Tricep never gets tired in this env
+        )
 
         self.frames = 0
 
@@ -150,7 +152,7 @@ class PymunkArmEnv(gym.Env):
         self._handle_keys()
 
         # Scale input to match the expected range of the muscle sim
-        input_array = np.array(input_array) * 67.0
+        input_array = np.array(input_array)
 
         if debug:
             print(input_array)
@@ -163,12 +165,15 @@ class PymunkArmEnv(gym.Env):
         brach_output = self.brach_muscle.step(input_array[0], step_size)
         tricep_output = self.tricep_muscle.step(input_array[1], step_size)
 
+        gain = 500
+        self.brach.stiffness = brach_output * gain
+        self.tricep.stiffness = tricep_output * gain
+
         if debug:
             print("Brach Total Output: ", brach_output)
             print("Tricep Total Output: ", tricep_output)
-
-        self.tricep.stiffness = tricep_output
-        self.brach.stiffness = brach_output
+            print("Brach Stiffness: ", self.brach.stiffness)
+            print("Tricep Stiffness: ", self.tricep.stiffness)
 
         hand_location = self.hand_shape.body.local_to_world((170, 0))
         return hand_location

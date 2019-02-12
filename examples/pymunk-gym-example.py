@@ -17,7 +17,7 @@ def main():
     env = PymunkArmEnv(apply_fatigue=True)
 
     # Set up the simulation parameters
-    sim_duration = 60  # seconds
+    sim_duration = 120  # seconds
     frames_per_second = 50
     step_size = 1 / frames_per_second
     total_steps = int(sim_duration / step_size)
@@ -25,7 +25,7 @@ def main():
     # Here we are going to send a constant excitation to the tricep and
     # vary the excitation of the bicep as we try to hit a target location.
     brachialis_input = 0.4  # Percent of max input
-    tricep_input = 0.6
+    tricep_input = 0.2
     hand_target_y = 360
     target_delta = 10
     # Hand tuned PID params.
@@ -59,6 +59,8 @@ def main():
 
         if brachialis_input > 1.0:
             brachialis_input = 1.0
+        if brachialis_input < 0.0:
+            brachialis_input = 0.0
 
         # Vary our set point and display the excitation required
         if i % frames_per_second == 0:
