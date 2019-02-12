@@ -27,7 +27,7 @@ motor_unit_count = 120
 muscle = Muscle(motor_unit_count)
 
 # Set up the simulation parameters
-sim_duration = 60  # seconds
+sim_duration = 200  # seconds
 frames_per_second = 50
 step_size = 1 / frames_per_second
 total_steps = int(sim_duration / step_size)
@@ -67,7 +67,7 @@ chart.display()
 
 This will open a browser window with the produced chart. It should look like this:
 
-<p align="center"><img width="80%" src="docs/src/images/minimal-example-chart.png" /></p>
+<p align="center"><img width="80%" src="docs/src/images/minimal-physio-example-chart.png" /></p>
 
 # Limitations
 

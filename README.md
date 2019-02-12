@@ -110,13 +110,13 @@ from pymuscle.vis import PotvinChart
 muscle = Muscle()
 
 # Set up the simulation parameters
-sim_duration = 60  # seconds
+sim_duration = 200  # seconds
 frames_per_second = 50
 step_size = 1 / frames_per_second
 total_steps = int(sim_duration / step_size)
 
 # Use a constant level of excitation to more easily observe fatigue
-excitation = 0.4  # Range is 0.0 to 1.0
+excitation = 0.6  # Range is 0.0 to 1.0
 
 total_outputs = []
 outputs_by_unit = []
