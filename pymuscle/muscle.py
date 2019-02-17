@@ -166,9 +166,6 @@ class StandardMuscle(Muscle):
         # Ratio of newtons (N) to internal arbitrary force units
         self.force_conversion_factor = force_conversion_factor
 
-        # Max output in arbitrary units
-        self.max_arb_output = max_force / force_conversion_factor
-
         motor_unit_count = self.force_to_motor_unit_count(
             self.max_force,
             self.force_conversion_factor,
@@ -189,6 +186,9 @@ class StandardMuscle(Muscle):
             motor_neuron_pool_model=pool,
             muscle_fibers_model=fibers
         )
+
+        # Max output in arbitrary units
+        self.max_arb_output = sum(self._fibers._peak_twitch_forces)
 
     @staticmethod
     def force_to_motor_unit_count(

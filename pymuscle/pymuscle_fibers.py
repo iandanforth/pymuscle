@@ -1,3 +1,4 @@
+import numpy as np
 from numpy import ndarray
 
 from .potvin_fuglevand_2017_muscle_fibers import PotvinFuglevand2017MuscleFibers
@@ -116,6 +117,7 @@ class PyMuscleFibers(PotvinFuglevand2017MuscleFibers):
 
         TODO - Finalize the strategy used below
         """
+        # Find the indices of valid, recovering units.
         recovering = normalized_forces <= 0
 
         # Strategy 1 - Linear recovery at fatigue rates

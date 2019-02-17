@@ -285,7 +285,7 @@ class PotvinFuglevand2017MuscleFibers(Model):
     def step(
         self,
         motor_pool_output: ndarray,
-        step_size: float = 0.1
+        step_size: float
     ) -> float:
         """
         Advance the muscle fibers simulation one step.
