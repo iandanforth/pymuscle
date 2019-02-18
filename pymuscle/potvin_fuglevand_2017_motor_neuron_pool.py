@@ -26,13 +26,6 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
         Max firing rate for the first motor unit (maxR(1))
     :param max_firing_rate_last_unit:
         Max firing rate for the last motor unit (maxR(last))
-    :param pre_calc_firing_rates:
-        Whether to build a dict mapping excitation levels to firing rates for
-        each motor neuron. This can speed up simulation at the cost of
-        additional memory.
-    :param pre_calc_resolution:
-        Step size for excitation levels to pre-calculate (res)
-    :param pre_calc_max: Highest excitation value to pre-calculate
     :param derecruitment_delta:
         Absolute minimum firing rate = min_firing_rate - derecruitment_delta
         (d)
@@ -45,11 +38,7 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
         Longest duration of motor unit activity that will be recorded. The
         default value should be >> than the time it takes to fatigue all
         fibers. Helps prevent unbounded values.
-
-    .. todo::
-        Make pre_calc_max a function of other values as in the matlab code.
-        This will also require changing how we look up values if they
-        are larger than this value.
+    :apply_fatigue: Whether to calculate and apply central fatigue.
 
     Usage::
 
@@ -69,9 +58,6 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
         min_firing_rate: int = 8,
         max_firing_rate_first_unit: int = 35,
         max_firing_rate_last_unit: int = 25,
-        pre_calc_firing_rates: bool = False,
-        pre_calc_resolution: float = 0.1,
-        pre_calc_max: float = 70.0,
         derecruitment_delta: int = 2,
         adaptation_magnitude: float = 0.67,
         adaptation_time_constant: float = 22.0,
@@ -115,43 +101,6 @@ class PotvinFuglevand2017MotorNeuronPool(Model):
         # Pre-calculate firing rates for all motor neurons across a range of
         # possible excitation levels.
         self._firing_rates_by_excitation: Dict[float, Any] = {}
-        if pre_calc_firing_rates:
-            self._build_firing_rates_cache(pre_calc_max, pre_calc_resolution)
-
-    def _build_firing_rates_cache(
-        self,
-        pre_calc_max: float,
-        pre_calc_resolution: float
-    ) -> None:
-        """
-        Pre-calculate and store firing rates for all motor neurons across a
-        range of possible excitation levels.
-
-        :param pre_calc_max: The maximum excitation value to calculate.
-        :param pre_calc_resolution: 
-            The step size between values during calculations.
-        """
-
-        # TODO: This is a hack. Maybe memoize vs pre-calculate?
-        # Maybe https://docs.python.org/3/library/functools.html#functools.lru_cache
-        resolution_places = len(str(pre_calc_resolution).split(".")[1])
-        excitations = np.zeros(self.motor_unit_count)
-        excitation_values = np.arange(
-            0.0,
-            pre_calc_max + pre_calc_resolution,
-            pre_calc_resolution
-        )
-        for i in excitation_values:
-            i = round(i, resolution_places)
-            self._firing_rates_by_excitation[i] = \
-                self._inner_calc_firing_rates(
-                    excitations,
-                    self._recruitment_thresholds,
-                    self._firing_gain,
-                    self._min_firing_rate,
-                    self._peak_firing_rates
-            )
-            excitations += pre_calc_resolution
 
     def _calc_adapted_firing_rates(
         self,

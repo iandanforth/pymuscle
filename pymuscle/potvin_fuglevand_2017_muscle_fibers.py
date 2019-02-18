@@ -20,13 +20,14 @@ class PotvinFuglevand2017MuscleFibers(Model):
         [milliseconds] Maximum contraction time for a motor unit (tL)
     :param contraction_time_range:
         The scale between the fastest contraction time and the slowest (rt)
-    :fatigue_factor_first_unit:
-        The nominal fatigability of the first motor unit in percent / second
+    :max_fatigue_rate: [percent per second] The rate at which the largest
+        motor unit will fatigue at maximum excitation.
     :fatigability_range:
         The scale between the fatigability of the first motor unit and the last
     :contraction_time_change_ratio:
         For each percent of force lost during fatigue, what percentage should
         contraction increase? Based on Shields et al (1997)
+    :apply_fatigue: Whether to calculate and apply peripheral fatigue.
 
     .. todo::
         The argument naming isn't consistent. Sometimes we use 'max' and other
@@ -48,8 +49,6 @@ class PotvinFuglevand2017MuscleFibers(Model):
         max_twitch_amplitude: int = 100,
         max_contraction_time: int = 90,
         contraction_time_range: int = 3,
-        max_recruitment_threshold: int = 50,
-        fatigue_factor_first_unit: float = 0.0125,
         max_fatigue_rate: float = 0.0225,
         fatigability_range: int = 180,
         contraction_time_change_ratio: float = 0.379,
@@ -81,7 +80,7 @@ class PotvinFuglevand2017MuscleFibers(Model):
             self._peak_twitch_forces
         )
 
-        # Assing other non-public attributes
+        # Assign other non-public attributes
         self._contraction_time_change_ratio = contraction_time_change_ratio
         self._apply_fatigue = apply_fatigue
         self._max_fatigue_rate = max_fatigue_rate

@@ -102,13 +102,11 @@ class PotvinFuglevandMuscle(Muscle):
         self,
         motor_unit_count: int,
         apply_central_fatigue: bool = True,
-        apply_peripheral_fatigue: bool = True,
-        pre_calc_firing_rates: bool = False
+        apply_peripheral_fatigue: bool = True
     ):
         pool = PotvinFuglevand2017MotorNeuronPool(
             motor_unit_count,
-            apply_fatigue=apply_central_fatigue,
-            pre_calc_firing_rates=pre_calc_firing_rates
+            apply_fatigue=apply_central_fatigue
         )
         fibers = PotvinFuglevand2017MuscleFibers(
             motor_unit_count,
@@ -156,8 +154,7 @@ class StandardMuscle(Muscle):
         max_force: float = 32.0,
         force_conversion_factor: float = 0.0123,
         apply_central_fatigue: bool = False,
-        apply_peripheral_fatigue: bool = True,
-        pre_calc_firing_rates: bool = False
+        apply_peripheral_fatigue: bool = True
     ):
 
         # Maximum voluntary isometric force this muscle will be able to produce
@@ -173,8 +170,7 @@ class StandardMuscle(Muscle):
 
         pool = PotvinFuglevand2017MotorNeuronPool(
             motor_unit_count,
-            apply_fatigue=apply_central_fatigue,
-            pre_calc_firing_rates=pre_calc_firing_rates
+            apply_fatigue=apply_central_fatigue
         )
         fibers = PyMuscleFibers(
             motor_unit_count,

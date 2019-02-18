@@ -60,26 +60,6 @@ def test_step():
     assert output_sum == pytest.approx(max_output)
 
 
-def test_precacl_values():
-    # Pre calculated values and on-the-fly values should be the same
-    motor_unit_count = 120
-    p1 = Pool(motor_unit_count)
-    p2 = Pool(
-        motor_unit_count,
-        pre_calc_firing_rates=True
-    )
-    moderate_input = 40.0
-    input_array = np.full(motor_unit_count, moderate_input)
-
-    output1 = p1.step(input_array, 1.0)
-    output1_sum = np.sum(output1)
-
-    output2 = p2.step(input_array, 1.0)
-    output2_sum = np.sum(output2)
-
-    assert output1_sum == pytest.approx(output2_sum)
-
-
 def test_fatigue_values():
     motor_unit_count = 120
 
