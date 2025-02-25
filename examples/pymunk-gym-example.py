@@ -26,8 +26,8 @@ def main():
     # vary the excitation of the bicep as we try to hit a target location.
     brachialis_input = 0.4  # Percent of max input
     tricep_input = 0.2
-    hand_target_y = 360
-    target_delta = 10
+    hand_target_y = 200
+    target_delta = -10   # Negative delta because lower y values are higher on screen
     # Hand tuned PID params.
     Kp = 0.0001
     Ki = 0.00004
@@ -44,15 +44,16 @@ def main():
         if prev_y is None:
             prev_y = hand_y
 
-        # Proportional component
-        error = hand_target_y - hand_y
+        # Proportional component - INVERTED for flipped coordinate system
+        # In the flipped system, we need to DECREASE y to move UP
+        error = hand_y - hand_target_y  # Inverted error calculation
         alpha = Kp * error
-        # Add integral component
+        # Add integral component - signs adjusted for flipped coordinates
         i_c = Ki * (error * step_size)
-        alpha -= i_c
-        # Add in differential component
-        d_c = Kd * ((hand_y - prev_y) / step_size)
-        alpha -= d_c
+        alpha += i_c  # Sign changed from - to +
+        # Add in differential component - signs adjusted for flipped coordinates
+        d_c = Kd * ((prev_y - hand_y) / step_size)  # Inverted velocity calculation
+        alpha += d_c  # Sign changed from - to +
 
         prev_y = hand_y
         brachialis_input += alpha
@@ -65,6 +66,7 @@ def main():
         # Vary our set point and display the excitation required
         if i % frames_per_second == 0:
             print(brachialis_input)
+            print(prev_y)
             hand_target_y += target_delta
 
         # Switch directions every 5 seconds

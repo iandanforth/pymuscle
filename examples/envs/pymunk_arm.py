@@ -41,7 +41,7 @@ class PymunkArmEnv(gym.Env):
         self.draw_options = pymunk.pygame_util.DrawOptions(self.screen)
         self.draw_options.flags = 1  # Disable constraint drawing
         self.space = pymunk.Space()
-        self.space.gravity = (0.0, -980.0)
+        self.space.gravity = (0.0, 980.0)  # Normal gravity for the flipped arm
 
     def _add_arm(self):
         config = {
@@ -54,7 +54,7 @@ class PymunkArmEnv(gym.Env):
             "brach_stiffness": 450,
             "brach_damping": 200,
             "tricep_rest_length": 30,
-            "tricep_stiffness": 50,
+            "tricep_stiffness": 200,
             "tricep_damping": 400
         }
 
@@ -62,7 +62,7 @@ class PymunkArmEnv(gym.Env):
         upper_arm_length = 200
         upper_arm_body = pymunk.Body(body_type=pymunk.Body.STATIC)
         upper_arm_body.position = config["arm_center"]
-        upper_arm_body.angle = np.deg2rad(-45)
+        upper_arm_body.angle = np.deg2rad(45)
         upper_arm_line = pymunk.Segment(upper_arm_body, (0, 0), (-upper_arm_length, 0), 5)
         upper_arm_line.sensor = True  # Disable collision
 
@@ -72,7 +72,7 @@ class PymunkArmEnv(gym.Env):
         # Lower Arm
         lower_arm_body = pymunk.Body(0, 0)  # Pymunk will calculate moment based on mass of attached shape
         lower_arm_body.position = config["arm_center"]
-        lower_arm_body.angle = np.deg2rad(config["lower_arm_starting_angle"])
+        lower_arm_body.angle = np.deg2rad(-config["lower_arm_starting_angle"])  # Negative angle to flip
         elbow_extension_length = 20
         lower_arm_start = (-elbow_extension_length, 0)
         lower_arm_line = pymunk.Segment(
@@ -88,9 +88,8 @@ class PymunkArmEnv(gym.Env):
         self.space.add(lower_arm_line)
 
         # Hand
-        hand_width = hand_height = 15
         start_x = config["lower_arm_length"]
-        start_y = 14
+        start_y = -14  # Flipped to match new orientation
         self.hand_shape = pymunk.Circle(
             lower_arm_body,
             20,
@@ -105,7 +104,7 @@ class PymunkArmEnv(gym.Env):
         self.space.add(elbow_joint)
 
         # Spring (Brachialis Muscle)
-        brach_spring = pymunk.constraint.DampedSpring(
+        brach_spring = pymunk.DampedSpring(
             upper_arm_body,
             lower_arm_body,
             (-(upper_arm_length * (1 / 2)), 0),  # Connect half way up the upper arm
@@ -117,7 +116,7 @@ class PymunkArmEnv(gym.Env):
         self.space.add(brach_spring)
 
         # Spring (Tricep Muscle)
-        tricep_spring = pymunk.constraint.DampedSpring(
+        tricep_spring = pymunk.DampedSpring(
             upper_arm_body,
             lower_arm_body,
             (-(upper_arm_length * (3 / 4)), 0),
@@ -132,7 +131,7 @@ class PymunkArmEnv(gym.Env):
         elbow_stop_point = pymunk.Circle(
             upper_arm_body,
             radius=5,
-            offset=(-elbow_extension_length, -3)
+            offset=(-elbow_extension_length, 3)  # Flipped to match new orientation
         )
         elbow_stop_point.friction = 1.0
         self.space.add(elbow_stop_point)
@@ -165,8 +164,10 @@ class PymunkArmEnv(gym.Env):
         brach_output = self.brach_muscle.step(input_array[0], step_size)
         tricep_output = self.tricep_muscle.step(input_array[1], step_size)
 
+        # Use a moderate gain for balanced muscle power
         gain = 500
-        self.brach.stiffness = brach_output * gain
+        # Apply muscle outputs directly to their respective springs
+        self.brach.stiffness = brach_output * gain 
         self.tricep.stiffness = tricep_output * gain
 
         if debug:
@@ -179,7 +180,7 @@ class PymunkArmEnv(gym.Env):
         return hand_location
 
     def render(self, debug=True):
-        if debug and (self.draw_options.flags is not 3):
+        if debug and (self.draw_options.flags != 3):
             self.draw_options.flags = 3  # Enable constraint drawing
 
         self.screen.fill((255, 255, 255))

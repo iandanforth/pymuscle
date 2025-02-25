@@ -1,0 +1,5 @@
+pymunk==6.11.1
+pygame==2.6.1
+numpy==2.2.3
+gym==0.26.2
+gym-notices==0.0.8
